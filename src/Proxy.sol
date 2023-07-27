@@ -23,8 +23,25 @@
 
 pragma solidity 0.8.18;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+contract Proxy {
+    address private immutable _implementation;
 
-contract Proxy is Ownable {
+    constructor(address implementation) {
+        _implementation = implementation;
+    }
 
+    fallback() external payable {
+        address implementation = _implementation;
+        assembly {
+            let ptr := mload(0x40)
+            calldatacopy(ptr, 0, calldatasize())
+            let result := delegatecall(gas(), implementation, ptr, calldatasize(), 0, 0)
+            let size := returndatasize()
+            returndatacopy(ptr, 0, size)
+
+            switch result
+            case 0 { revert(ptr, size) }
+            default { return(ptr, size) }
+        }
+    }
 }
