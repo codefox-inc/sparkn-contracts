@@ -57,7 +57,7 @@ contract Proxy {
         }
     }
 
-    function getImlementation() external view returns (address) { // TODO: maybe remove this function
-        return _implementation;
-    }
+    // function getImlementation() external view returns (address) { // TODO: maybe remove this function
+    //     return _implementation;
+    // }
 }
