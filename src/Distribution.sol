@@ -46,9 +46,9 @@ contract JpycDistribution {
     //////////////////////////////////
     address private immutable FACTORY_ADDRESS;
     address private immutable STUDIUM_ADDRESS;
-    address private immutable JPYC_V2_ADDRESS = ;
-    address private immutable JPYC_V1_ADDRESS = ;
-    uint256 private immutable COMMITION_FEE = 5; // 5% this can be changed in the future
+    address private immutable JPYC_V2_ADDRESS;
+    address private immutable JPYC_V1_ADDRESS;
+    uint256 private immutable COMMITION_FEE; // 5% this can be changed in the future
 
     event Distributed(address token, address[] winners, uint256[] percentages);
 
@@ -60,7 +60,7 @@ contract JpycDistribution {
         STUDIUM_ADDRESS = stadium_address;
         JPYC_V1_ADDRESS = jpyc_v1_address; // 0x2370f9d504c7a6E775bf6E14B3F12846b594cD53 polygon
         JPYC_V2_ADDRESS =jpyc_v2_address; // 0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB polygon
-        COMMITION_FEE = commition_fee;
+        COMMITION_FEE = commition_fee; // 5% this can be changed in the future
     }
 
     ////////////////////////////////////////////

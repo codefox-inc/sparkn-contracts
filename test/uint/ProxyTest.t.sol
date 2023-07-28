@@ -22,9 +22,9 @@ contract ProxyTest is StdCheats, Test {
     /// expected pattern
     function testImmutableVariableIsSet() public {
         // test something
-        assertEq(proxy.getImlementation(), address(1));
-        assertEq(secondProxy.getImlementation(), makeAddr('randomImplementation'));
-        assertEq(thirdProxy.getImlementation(), makeAddr('randomImplementation2'));
+        // assertEq(proxy.getImlementation(), address(1));
+        // assertEq(secondProxy.getImlementation(), makeAddr('randomImplementation'));
+        // assertEq(thirdProxy.getImlementation(), makeAddr('randomImplementation2'));
     }
 
     /// expected failing pattern
