@@ -23,14 +23,26 @@
 
 pragma solidity 0.8.18;
 
+/**
+ * @dev This contract is the proxy contract which will be deployed by the factory contract.
+ * This contract is based on the OpenZeppelin's Proxy contract.
+ * This contract is designed to be with minimal logic in it.
+ * @notice This contract is created and paired with every contest in Taibow Stadium.
+ * This disposable contract is supposed to be used during the contest's life cycle.
+ */
 contract Proxy {
+    // implementation address
     address private immutable _implementation;
 
+    /// @dev set implementation address
     constructor(address implementation) {
         _implementation = implementation;
     }
 
-    fallback() external payable {
+    /**
+     * @dev Delegate all the calls to implementation contract
+     */
+    fallback() external {
         address implementation = _implementation;
         assembly {
             let ptr := mload(0x40)
@@ -43,5 +55,9 @@ contract Proxy {
             case 0 { revert(ptr, size) }
             default { return(ptr, size) }
         }
+    }
+
+    function getImlementation() external view returns (address) { // TODO: maybe remove this function
+        return _implementation;
     }
 }
