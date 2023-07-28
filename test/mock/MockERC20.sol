@@ -25,7 +25,7 @@
 
 pragma solidity 0.8.18;
 
-import {ERC20Burnable, ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /*
@@ -34,10 +34,11 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * @dev this is a random ERC20 token for testing purposes
  * This can be supposed to be an stable coin in the current system 
  */
-contract TaibowCoin is ERC20Burnable, Ownable {
+contract MockERC20 is ERC20, Ownable {
     error TaibowCoin__AmountMustBeMoreThanZero();
 
-    constructor() ERC20("TaibowCoin", "TC") {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
+        _mint(msg.sender, 100000 * 10 ** decimals());
     }
 
     function mint(address _to, uint256 _amount) external onlyOwner returns (bool) {
@@ -47,17 +48,4 @@ contract TaibowCoin is ERC20Burnable, Ownable {
         _mint(_to, _amount);
         return true;
     }
-
-    // function burn(uint256 _amount) public override onlyOwner {
-    //     // We crash the price
-    //     MockV3Aggregator(mockAggregator).updateAnswer(0);
-    //     uint256 balance = balanceOf(msg.sender);
-    //     if (_amount <= 0) {
-    //         revert DecentralizedStableCoin__AmountMustBeMoreThanZero();
-    //     }
-    //     if (balance < _amount) {
-    //         revert DecentralizedStableCoin__BurnAmountExceedsBalance();
-    //     }
-    //     super.burn(_amount);
-    // }
 }
