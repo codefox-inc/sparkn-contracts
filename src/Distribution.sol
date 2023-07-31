@@ -27,11 +27,11 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /*
-* @notice Certain ERC20 stable coin tokens, e.g. JPYC, USDC, USDT, DAI, etc, are suppsoed to be used in Taibow.
+* @notice General ERC20 stable coin tokens, e.g. JPYC, USDC, USDT, DAI, etc, are suppsoed to be used in Taibow.
 * @dev This contract is used as the implementation of proxy contracts to distribute ERC20 token(e.g. JPYC) to winners
 * @dev If we want to upgrade the implementation contract we can deploy a new one and change the implementation address of proxy contract.
 */
-contract JpycDistribution {
+contract Distributor {
     using SafeERC20 for IERC20;
     //////////////////////
     /////// Error ////////
@@ -51,8 +51,9 @@ contract JpycDistribution {
     address private immutable FACTORY_ADDRESS;
     address private immutable STUDIUM_ADDRESS;
     address private immutable JPYC_V2_ADDRESS;
+    // mapping (address => bool) private whitelistedTokens; // @audit 
     address private immutable JPYC_V1_ADDRESS;
-    uint256 private immutable COMMISSION_FEE;
+    uint256 private immutable COMMISSION_FEE; // uses basis point 10000 = 100%
 
     event Distributed(address token, address[] winners, uint256[] percentages);
 
@@ -67,7 +68,7 @@ contract JpycDistribution {
         address jpyc_v2_address,
         uint256 commission_fee
     ) {
-        if (commission_fee > 10) revert JpycDistribution__InvalidCommissionFee();
+        if (commission_fee > 1000) revert JpycDistribution__InvalidCommissionFee(); // more than 10%
         if (factory_address == address(0) || stadium_address == address(0)) revert JpycDistribution__NoZeroAddress();
         if (jpyc_v1_address == address(0) && jpyc_v2_address == address(0)) revert JpycDistribution__NoZeroAddress();
         FACTORY_ADDRESS = factory_address; // initialize with deployed factory address beforehand
@@ -110,6 +111,7 @@ contract JpycDistribution {
      * @param percentages The percentages of winners
      */
     function _distribute(address token, address[] memory winners, uint256[] memory percentages) internal {
+        // token address input check
         if (token == address(0) || token != JPYC_V1_ADDRESS || token != JPYC_V2_ADDRESS) {
             revert JpycDistribution__InvalidTokenAddress();
         }
@@ -123,14 +125,14 @@ contract JpycDistribution {
             }
         }
         // check if totalPercentage is correct
-        if (totalPercentage != (100 - COMMISSION_FEE)) {
+        if (totalPercentage != (10000 - COMMISSION_FEE)) {
             revert JpycDistribution__MismatchedPercentages();
         }
         IERC20 erc20 = IERC20(token);
         uint256 totalAmount = erc20.balanceOf(address(this));
         uint256 winnersLength = winners.length; // cache length
         for (uint256 i; i < winnersLength;) {
-            uint256 amount = totalAmount * percentages[i] / 100;
+            uint256 amount = totalAmount * percentages[i] / 10000;
             erc20.safeTransfer(winners[i], amount);
             unchecked {
                 ++i;
