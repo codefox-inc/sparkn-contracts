@@ -31,15 +31,28 @@ import "./Proxy.sol";
 /**
  * @notice This contract is the factory contract which will be used to deploy proxy contracts.
  * @notice It will be used to deploy proxy contracts for every contest in Taibow Stadium.
+ * @dev 
  */
 contract ProxyFactory is Ownable {
+    //////////////////////
+    /////// Error ////////
+    //////////////////////
+    error CloseTimeTooFarAway();
+    error InvalidSignature();
+    error ContestIsAlreadyRegistered();
+    error ContestIsNotClosed();
+    error ContestIsNotRegistered();
+    error ContestIsNotExpired();
+    error DelegateCallFailed();
+    error ProxyAddressCannotBeZero();
+
     // contest distribution expiration
     uint256 public constant EXPIRATION_TIME = 7 days;
     uint256 public constant MAX_CONTEST_PERIOD = 28 days;
 
     /// @notice record contest close time by salt
     /// @notice The contest doesn't exist when value is 0
-    mapping(bytes32 => uint256) public closeTime;
+    mapping(bytes32 => uint256) public saltTocloseTime; 
     mapping(bytes32 => address) public saltToImplementation;
 
     /**
@@ -53,32 +66,32 @@ contract ProxyFactory is Ownable {
         public
         onlyOwner
     {
-        require(_closeTime < block.timestamp + MAX_CONTEST_PERIOD, "Close time is zero");
+        if (_closeTime > block.timestamp + MAX_CONTEST_PERIOD) revert CloseTimeTooFarAway();
         bytes32 salt = _calculateSalt(organizer, contestId);
         saltToImplementation[salt] = implementation;
-        require(closeTime[salt] == 0, "Contest is already registered");
-        closeTime[salt] = _closeTime;
+        if (saltTocloseTime[salt] != 0) revert ContestIsAlreadyRegistered();
+        saltTocloseTime[salt] = _closeTime;
     }
 
     function deployProxyAndDsitribute(bytes32 contestId, bytes calldata data) public {
         bytes32 salt = _calculateSalt(msg.sender, contestId);
-        require(closeTime[salt] == 0, "Contest is not registered");
-        require(closeTime[salt] < block.timestamp, "Contest is not closed");
+        if (saltTocloseTime[salt] == 0) revert ContestIsNotRegistered();
+        if (saltTocloseTime[salt] >= block.timestamp) revert ContestIsNotClosed();
         address proxy = _deployProxy(msg.sender, contestId);
         _distribute(proxy, data);
     }
 
-    function deployProxyAndDistributeBySignature(
+    function deployProxyAndDistributeBySignature( // @audit replay attack?? -> EIP712追加
         address organizer,
         bytes32 contestId,
         bytes calldata signature,
         bytes calldata data
     ) public {
-        bytes32 hash = keccak256(abi.encode(contestId, data));
-        require(ECDSA.recover(hash, signature) == organizer, "Invalid signature");
+        bytes32 hash = keccak256(abi.encode(contestId, data)); 
+        if (ECDSA.recover(hash, signature) != organizer) revert InvalidSignature();
         bytes32 salt = _calculateSalt(msg.sender, contestId);
-        require(closeTime[salt] == 0, "Contest is not registered");
-        require(closeTime[salt] < block.timestamp, "Contest is not closed");
+        if (saltTocloseTime[salt] == 0) revert ContestIsNotRegistered();
+        if (saltTocloseTime[salt] >= block.timestamp) revert ContestIsNotClosed();
         address proxy = _deployProxy(organizer, contestId);
         _distribute(proxy, data);
     }
@@ -88,8 +101,10 @@ contract ProxyFactory is Ownable {
         onlyOwner
     {
         bytes32 salt = _calculateSalt(organizer, contestId);
-        require(closeTime[salt] == 0, "Contest is not registered");
-        require(closeTime[salt] < block.timestamp + EXPIRATION_TIME, "Contest is not expired");
+        if (saltTocloseTime[salt] == 0) revert ContestIsNotRegistered();
+        if (saltTocloseTime[salt] >= (block.timestamp + EXPIRATION_TIME)) revert ContestIsNotExpired();
+        // require(saltTocloseTime[salt] == 0, "Contest is not registered");
+        // require(saltTocloseTime[salt] < block.timestamp + EXPIRATION_TIME, "Contest is not expired");
         address proxy = _deployProxy(organizer, contestId);
         _distribute(proxy, data);
     }
@@ -98,10 +113,11 @@ contract ProxyFactory is Ownable {
         public
         onlyOwner
     {
-        require(proxy != address(0), "Proxy address is zero");
+        if (proxy == address(0)) revert ProxyAddressCannotBeZero();
+        // require(proxy != address(0), "Proxy address is zero");
         bytes32 salt = _calculateSalt(organizer, contestId);
-        require(closeTime[salt] == 0, "Contest is not registered");
-        require(closeTime[salt] < block.timestamp + EXPIRATION_TIME, "Contest is not expired");
+        if (saltTocloseTime[salt] == 0) revert ContestIsNotRegistered();
+        if (saltTocloseTime[salt] >= (block.timestamp + EXPIRATION_TIME)) revert ContestIsNotExpired();
         _distribute(proxy, data);
     }
 
@@ -116,7 +132,7 @@ contract ProxyFactory is Ownable {
     /// @dev The function to be used to call proxy to distribute prizes to the winners
     function _distribute(address proxy, bytes calldata data) internal {
         (bool success,) = proxy.call(data);
-        require(success, "Failed to execute delegate call in the Proxy contract");
+        if (!success) revert DelegateCallFailed();
     }
 
     // @dev Calculate salt using contest organizer address and contestId
