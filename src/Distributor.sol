@@ -25,12 +25,12 @@ pragma solidity 0.8.18;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ProxyFactory} from "./ProxyFactory.sol";
 
 /*
 * @notice General ERC20 stable coin tokens, e.g. JPYC, USDC, USDT, DAI, etc, are suppsoed to be used in Taibow.
 * @dev This contract is used as the implementation of proxy contracts to distribute ERC20 token(e.g. JPYC) to winners
-* @dev If we want to upgrade the implementation contract we can deploy a new one and change the implementation address of proxy contract.
-*/
+* @dev If we want to upgrade the implementation contract we can deploy a new one and change the implementation address of proxy contract.*/
 contract Distributor {
     using SafeERC20 for IERC20;
     //////////////////////
@@ -50,9 +50,6 @@ contract Distributor {
     uint8 private immutable VERSION; // version is 1 for now
     address private immutable FACTORY_ADDRESS;
     address private immutable STUDIUM_ADDRESS;
-    address private immutable JPYC_V2_ADDRESS;
-    // mapping (address => bool) private whitelistedTokens; // @audit 
-    address private immutable JPYC_V1_ADDRESS;
     uint256 private immutable COMMISSION_FEE; // uses basis point 10000 = 100%
 
     event Distributed(address token, address[] winners, uint256[] percentages);
@@ -65,17 +62,12 @@ contract Distributor {
         // uint256 version, // for future use
         address factory_address,
         address stadium_address,
-        address jpyc_v1_address,
-        address jpyc_v2_address,
         uint256 commission_fee
     ) {
         if (commission_fee > 1000) revert Distributor__InvalidCommissionFee(); // more than 10% is not allowed
         if (factory_address == address(0) || stadium_address == address(0)) revert Distributor__NoZeroAddress();
-        if (jpyc_v1_address == address(0) && jpyc_v2_address == address(0)) revert Distributor__NoZeroAddress();
         FACTORY_ADDRESS = factory_address; // initialize with deployed factory address beforehand
         STUDIUM_ADDRESS = stadium_address;
-        JPYC_V1_ADDRESS = jpyc_v1_address; // 0x2370f9d504c7a6E775bf6E14B3F12846b594cD53 polygon
-        JPYC_V2_ADDRESS = jpyc_v2_address; // 0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB polygon
         COMMISSION_FEE = commission_fee; // 5% this can be changed in the future
         VERSION = 1;
     }
@@ -114,7 +106,7 @@ contract Distributor {
     function _distribute(address token, address[] memory winners, uint256[] memory percentages) internal {
         // token address input check
         if (token == address(0)) revert Distributor__NoZeroAddress();
-        if (token != JPYC_V1_ADDRESS || token != JPYC_V2_ADDRESS) {
+        if (_isWhiteListed(token)) {
             revert Distributor__InvalidTokenAddress();
         }
         // winners and percentages input check
@@ -153,6 +145,10 @@ contract Distributor {
         token.safeTransfer(STUDIUM_ADDRESS, token.balanceOf(address(this)));
     }
 
+    function _isWhiteListed(address token) internal view returns (bool) {
+        return ProxyFactory(FACTORY_ADDRESS).whitelistTokens(token);
+    }
+
     ///////////////////////////////////////////
     /////// Getter pure/view functions ////////
     ///////////////////////////////////////////
@@ -162,18 +158,10 @@ contract Distributor {
     function getConstants()
         external
         view
-        returns (
-            address _FACTORY_ADDRESS,
-            address _STUDIUM_ADDRESS,
-            address _JPYC_V1_ADDRESS,
-            address _JPYC_V2_ADDRESS,
-            uint256 _COMMISSION_FEE
-        )
+        returns (address _FACTORY_ADDRESS, address _STUDIUM_ADDRESS, uint256 _COMMISSION_FEE)
     {
         _FACTORY_ADDRESS = FACTORY_ADDRESS;
         _STUDIUM_ADDRESS = STUDIUM_ADDRESS;
-        _JPYC_V1_ADDRESS = JPYC_V1_ADDRESS;
-        _JPYC_V2_ADDRESS = JPYC_V2_ADDRESS;
         _COMMISSION_FEE = COMMISSION_FEE;
     }
 }
