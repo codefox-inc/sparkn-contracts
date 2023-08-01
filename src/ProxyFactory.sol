@@ -88,21 +88,21 @@ contract ProxyFactory is Ownable {
      * @dev only owner can call this function
      * @param organizer The owner of the contest
      * @param contestId The contest id
-     * @param _closeTime The contest close time
+     * @param closeTime The contest close time
      * @param implementation The implementation address
      */
-    function setContest(address organizer, bytes32 contestId, uint256 _closeTime, address implementation)
+    function setContest(address organizer, bytes32 contestId, uint256 closeTime, address implementation)
         public
         onlyOwner
     {
         if (organizer == address(0) || implementation == address(0)) revert ProxyFactory__NoZeroAddress();
-        if (_closeTime > block.timestamp + MAX_CONTEST_PERIOD || _closeTime < block.timestamp) {
+        if (closeTime > block.timestamp + MAX_CONTEST_PERIOD || closeTime < block.timestamp) {
             revert ProxyFactory__CloseTimeNotInRange();
         }
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] != 0) revert ProxyFactory__ContestIsAlreadyRegistered();
-        saltToCloseTime[salt] = _closeTime;
-        emit SetContest(organizer, contestId, _closeTime, implementation);
+        saltToCloseTime[salt] = closeTime;
+        emit SetContest(organizer, contestId, closeTime, implementation);
     }
 
     /**
