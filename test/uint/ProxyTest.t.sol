@@ -32,7 +32,15 @@ contract ProxyTest is StdCheats, Test {
         // test something
         vm.expectRevert();
         (bool success, ) = address(proxy).call(abi.encodeWithSignature("nonExistingFunction()"));
-        console.log(success);
+        // console.log(success);
+        assertEq(success, false);
+    }
+
+    function testFallbackFuncitonWillFailPattern2() public {
+        // test something
+        vm.expectRevert();
+        (bool success, ) = address(proxy).call(abi.encodeWithSignature("getConstants()"));
+        // console.log(success);
         assertEq(success, false);
     }
 }

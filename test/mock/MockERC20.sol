@@ -35,7 +35,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * This can be supposed to be an stable coin in the current system 
  */
 contract MockERC20 is ERC20, Ownable {
-    error TaibowCoin__AmountMustBeMoreThanZero();
+    error MockERC20__AmountMustBeMoreThanZero();
 
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {
         _mint(msg.sender, 100000 * 10 ** decimals());
@@ -43,7 +43,7 @@ contract MockERC20 is ERC20, Ownable {
 
     function mint(address _to, uint256 _amount) external onlyOwner returns (bool) {
         if (_amount == 0) {
-            revert TaibowCoin__AmountMustBeMoreThanZero();
+            revert MockERC20__AmountMustBeMoreThanZero();
         }
         _mint(_to, _amount);
         return true;

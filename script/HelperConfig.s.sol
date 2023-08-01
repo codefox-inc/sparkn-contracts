@@ -3,68 +3,86 @@
 pragma solidity ^0.8.18;
 
 import {Script} from "forge-std/Script.sol";
-import {ERC20Mock} from "@openzeppelin/contracts/mocks/ERC20Mock.sol";
+import {MockERC20} from "../test/mock/MockERC20.sol";
 
 // This contract script is to deploy the contracts on different networks and can be used for testing purposes
 contract HelperConfig is Script {
-    // struct NetworkConfig {
-    //     address wethUsdPriceFeed;
-    //     address wbtcUsdPriceFeed;
-    //     address weth;
-    //     address wbtc;
-    //     uint256 deployerKey;
-    // }
+    struct NetworkConfig {
+        // deployer's private key
+        // address[] tokensToWhitelist;
+        address jpycv1Address;
+        address jpycv2Address;
+        address usdcAddress;
+        uint256 deployerKey;
+    }
 
-    // uint8 public constant DECIMALS = 8;
-    // int256 public constant ETH_USD_PRICE = 2000e8;
-    // int256 public constant BTC_USD_PRICE = 1000e8;
-    // uint256 public DEFAULT_ANVIL_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+    // anvil's default private key
+    uint256 public constant DEFAULT_ANVIL_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
 
-    // NetworkConfig public activeNetworkConfig;
+    NetworkConfig public activeNetworkConfig;
 
-    // constructor() {
-    //     if (block.chainid == 11155111) {
-    //         activeNetworkConfig = getSepoliaEthConfig();
-    //     } else {
-    //         activeNetworkConfig = getOrCreateAnvilEthConfig();
-    //     }
-    // }
+    constructor() {
+        if (block.chainid == 11155111) {
+            // activeNetworkConfig = getSepoliaEthereumConfig();
+        } else if (block.chainid == 137) {
+            activeNetworkConfig = getPolygonConfig();
+        } else {
+            activeNetworkConfig = getOrCreateAnvilEthConfig();
+        }
+    }
 
-    // function getSepoliaEthConfig() public view returns (NetworkConfig memory) {
-    //     return NetworkConfig({
-    //         wethUsdPriceFeed: 0x694AA1769357215DE4FAC081bf1f309aDC325306,
-    //         wbtcUsdPriceFeed: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43,
-    //         weth: 0xdd13E55209Fd76AfE204dBda4007C227904f0a81,
-    //         wbtc: 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063,
-    //         deployerKey: vm.envUint("PRIVATE_KEY")
-    //     });
-    // }
+    function getSepoliaEthereumConfig() public view returns (NetworkConfig memory) {
+        // address[2] memory arr = [makeAddr("weth"), makeAddr("wbtc")];
+        // return NetworkConfig({
+        // tokensToWhitelist: arr,
+        // deployerKey: vm.envUint("PRIVATE_KEY")
+        // });
+    }
 
-    // function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
-    //     if (activeNetworkConfig.wethUsdPriceFeed != address(0)) {
-    //         return activeNetworkConfig;
-    //     }
+    function getPolygonConfig() public view returns (NetworkConfig memory) {
+        // real addresses
+        address[] memory arr = new address[](3);
+        arr[0] = 0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB; // jpyc v2 on polygon
+        arr[1] = 0x2370f9d504c7a6E775bf6E14B3F12846b594cD53; // jpyc v1 on polygon
+        arr[2] = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174; // usdc on polygon
+        // arr[3] = 0xc2132D05D31c914a87C6611C10748AEb04B58e8F; // usdt on polygon
 
-    //     vm.startBroadcast();
-    //     MockV3Aggregator ethUsdPriceFeed = new MockV3Aggregator(
-    //         DECIMALS,
-    //         ETH_USD_PRICE
-    //     );
-    //     ERC20Mock wethMock = new ERC20Mock("WETH", "WETH", msg.sender, 1000e8);
+        return NetworkConfig({
+            jpycv1Address: arr[0],
+            jpycv2Address: arr[1],
+            usdcAddress: arr[2],
+            deployerKey: vm.envUint("PRIVATE_KEY")
+        });
+    }
 
-    //     MockV3Aggregator btcUsdPriceFeed = new MockV3Aggregator(
-    //         DECIMALS,
-    //         BTC_USD_PRICE
-    //     );
-    //     ERC20Mock wbtcMock = new ERC20Mock("WBTC", "WBTC", msg.sender, 1000e8);
-    //     vm.stopBroadcast();
+    function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
+        if (activeNetworkConfig.jpycv1Address != address(0)) {
+            return activeNetworkConfig;
+        }
 
-    //     return NetworkConfig({
-    //         wethUsdPriceFeed: address(ethUsdPriceFeed),
-    //         wbtcUsdPriceFeed: address(btcUsdPriceFeed),
-    //         weth: address(wethMock),
-    //         wbtc: address(wbtcMock),
-    //         deployerKey: DEFAULT_ANVIL_KEY
-    //     });
-    // }
+        // deploy contracts
+        vm.startBroadcast();
+
+        MockERC20 jpycV2Mock = new MockERC20(
+            "JPY Coin V2",
+            "JPYCv2"
+        );
+        MockERC20 jpycv1Mock = new MockERC20(
+            "JPY Coin V1",
+            "JPYCv1"
+        );
+        MockERC20 usdcMock = new MockERC20(
+            "USD Coin",
+            "USDC"
+        );
+
+        vm.stopBroadcast();
+
+        return NetworkConfig({
+            jpycv1Address: address(jpycV2Mock),
+            jpycv2Address: address(jpycv1Mock),
+            usdcAddress: address(usdcMock),
+            deployerKey: DEFAULT_ANVIL_KEY
+        });
+    }
 }
