@@ -30,7 +30,8 @@ import {ProxyFactory} from "./ProxyFactory.sol";
 /*
 * @notice General ERC20 stable coin tokens, e.g. JPYC, USDC, USDT, DAI, etc, are suppsoed to be used in Taibow.
 * @dev This contract is used as the implementation of proxy contracts to distribute ERC20 token(e.g. JPYC) to winners
-* @dev If we want to upgrade the implementation contract we can deploy a new one and change the implementation address of proxy contract.*/
+* @dev If we want to upgrade the implementation contract we can deploy a new one and change the implementation address of proxy contract.
+*/
 contract Distributor {
     using SafeERC20 for IERC20;
     //////////////////////

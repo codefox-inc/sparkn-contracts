@@ -36,6 +36,7 @@ contract ProxyFactory is Ownable {
     //////////////////////
     /////// Error ////////
     //////////////////////
+    error ProxyFactory__NoEmptyArray();
     error ProxyFactory__NoZeroAddress();
     error ProxyFactory__CloseTimeNotInRange();
     error ProxyFactory__InvalidSignature();
@@ -61,14 +62,24 @@ contract ProxyFactory is Ownable {
     /// @notice record contest close time by salt
     /// @notice The contest doesn't exist when value is 0
     mapping(bytes32 => uint256) public saltToCloseTime;
-
+    /// @notice record the whitelisted tokens
     mapping(address => bool) public whitelistTokens;
 
     ////////////////////////////////////////////
     /////// External & Public functions ////////
     ////////////////////////////////////////////
-
-    constructor(address[] memory _whitelistTokens) {}
+    /// @notice The constructor will set the whitelist tokens. e.g. JPYCv1, JPYCv2, USDC, USDT, DAI
+    /// @notice the array is not supposed to be so long
+    constructor(address[] memory _whitelistTokens) {
+        if (_whitelistTokens.length == 0) revert ProxyFactory__NoEmptyArray();
+        for (uint256 i; i < _whitelistTokens.length;) {
+            if (_whitelistTokens[i] == address(0)) revert ProxyFactory__NoZeroAddress();
+            whitelistTokens[_whitelistTokens[i]] = true;
+            unchecked {
+                i++;
+            }
+        }
+    }
 
     /**
      * @notice Only owner can set contest's properties
@@ -106,7 +117,7 @@ contract ProxyFactory is Ownable {
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         if (saltToCloseTime[salt] >= block.timestamp) revert ProxyFactory__ContestIsNotClosed();
         address proxy = _deployProxy(msg.sender, contestId, implementation);
-        _distribute(proxy, data); // @audit how about creating data here?
+        _distribute(proxy, data);
     }
 
     /**
