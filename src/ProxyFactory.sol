@@ -137,6 +137,6 @@ contract ProxyFactory is Ownable {
 
     // @dev Calculate salt using contest organizer address and contestId
     function _calculateSalt(address organizer, bytes32 contestId) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(organizer, contestId));
+        return keccak256(abi.encode(organizer, contestId));
     }
 }
