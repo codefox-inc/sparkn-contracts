@@ -25,7 +25,6 @@ pragma solidity 0.8.18;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-
 import "./Proxy.sol";
 
 /**
@@ -47,6 +46,9 @@ contract ProxyFactory is Ownable {
     error ProxyFactory__DelegateCallFailed();
     error ProxyFactory__ProxyAddressCannotBeZero();
 
+    ////////////////////////////////
+    /////// State Variables ////////
+    ////////////////////////////////
     // contest distribution expiration
     uint256 public constant EXPIRATION_TIME = 7 days;
     uint256 public constant MAX_CONTEST_PERIOD = 28 days;
@@ -59,6 +61,9 @@ contract ProxyFactory is Ownable {
     /// @notice The implementation is not allowed when value is 0
     mapping(bytes32 => address) public saltToImplementation;
 
+    ////////////////////////////////////////////
+    /////// External & Public functions ////////
+    ////////////////////////////////////////////
     /**
      * @notice Only owner can set contest's properties
      * @notice close time must be less than 14 days from now
@@ -77,19 +82,33 @@ contract ProxyFactory is Ownable {
             revert ProxyFactory__CloseTimeNotInRange();
         }
         bytes32 salt = _calculateSalt(organizer, contestId);
-        saltToImplementation[salt] = implementation;
         if (saltToCloseTime[salt] != 0) revert ProxyFactory__ContestIsAlreadyRegistered();
+        saltToImplementation[salt] = implementation;
         saltToCloseTime[salt] = _closeTime;
     }
 
+    /** 
+    * @notice deploy proxy contract and distribute caller's prize
+    * @dev the caller can only control his own contest
+    * @param contestId The contest id
+    * @param data The prize distribution data
+    */
     function deployProxyAndDsitribute(bytes32 contestId, bytes calldata data) public {
         bytes32 salt = _calculateSalt(msg.sender, contestId);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         if (saltToCloseTime[salt] >= block.timestamp) revert ProxyFactory__ContestIsNotClosed();
         address proxy = _deployProxy(msg.sender, contestId);
-        _distribute(proxy, data);
+        _distribute(proxy, data); // @audit how about creating data here?
     }
 
+    /** 
+    * @notice deploy proxy contract and distribute prize on behalf of organizer
+    * @dev the caller can only control his own contest
+    * @param organizer The organizer of the contest
+    * @param contestId The contest id
+    * @param signature The signature from organizer
+    * @param data The prize distribution data
+    */
     function deployProxyAndDistributeBySignature( // @audit replay attack?? -> EIP712追加
     address organizer, bytes32 contestId, bytes calldata signature, bytes calldata data)
         public

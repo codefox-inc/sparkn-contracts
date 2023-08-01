@@ -44,9 +44,9 @@ contract Distributor {
     error Distributor__MismatchedArrays();
     error Distributor__MismatchedPercentages();
 
-    //////////////////////////////////
-    /////// State Variables //////////
-    //////////////////////////////////
+    //////////////////////////////////////
+    /////// Immutable Variables //////////
+    //////////////////////////////////////
     uint8 private immutable VERSION; // version is 1 for now
     address private immutable FACTORY_ADDRESS;
     address private immutable STUDIUM_ADDRESS;
