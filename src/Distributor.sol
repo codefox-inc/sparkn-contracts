@@ -37,17 +37,17 @@ contract Distributor {
     /////// Error ////////
     //////////////////////
 
-    error JpycDistribution__InvalidCommissionFee();
-    error JpycDistribution__NoZeroAddress();
-    error JpycDistribution__OnlyFactoryAddressIsAllowed();
-    error JpycDistribution__InvalidTokenAddress();
-    error JpycDistribution__MismatchedArrays();
-    error JpycDistribution__FailedToTransfer();
-    error JpycDistribution__MismatchedPercentages();
+    error Distributor__InvalidCommissionFee();
+    error Distributor__NoZeroAddress();
+    error Distributor__OnlyFactoryAddressIsAllowed();
+    error Distributor__InvalidTokenAddress();
+    error Distributor__MismatchedArrays();
+    error Distributor__MismatchedPercentages();
 
     //////////////////////////////////
     /////// State Variables //////////
     //////////////////////////////////
+    uint8 private immutable VERSION; // version is 1 for now
     address private immutable FACTORY_ADDRESS;
     address private immutable STUDIUM_ADDRESS;
     address private immutable JPYC_V2_ADDRESS;
@@ -62,20 +62,22 @@ contract Distributor {
     ////////////////////////////
     /// @dev initiate the contract with factory address and other key addresses, fee rate
     constructor(
+        // uint256 version, // for future use
         address factory_address,
         address stadium_address,
         address jpyc_v1_address,
         address jpyc_v2_address,
         uint256 commission_fee
     ) {
-        if (commission_fee > 1000) revert JpycDistribution__InvalidCommissionFee(); // more than 10%
-        if (factory_address == address(0) || stadium_address == address(0)) revert JpycDistribution__NoZeroAddress();
-        if (jpyc_v1_address == address(0) && jpyc_v2_address == address(0)) revert JpycDistribution__NoZeroAddress();
+        if (commission_fee > 1000) revert Distributor__InvalidCommissionFee(); // more than 10% is not allowed
+        if (factory_address == address(0) || stadium_address == address(0)) revert Distributor__NoZeroAddress();
+        if (jpyc_v1_address == address(0) && jpyc_v2_address == address(0)) revert Distributor__NoZeroAddress();
         FACTORY_ADDRESS = factory_address; // initialize with deployed factory address beforehand
         STUDIUM_ADDRESS = stadium_address;
         JPYC_V1_ADDRESS = jpyc_v1_address; // 0x2370f9d504c7a6E775bf6E14B3F12846b594cD53 polygon
         JPYC_V2_ADDRESS = jpyc_v2_address; // 0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB polygon
         COMMISSION_FEE = commission_fee; // 5% this can be changed in the future
+        VERSION = 1;
     }
 
     ////////////////////////////////////////////
@@ -91,18 +93,17 @@ contract Distributor {
      */
     function distribute(address token, address[] memory winners, uint256[] memory percentages) external {
         if (msg.sender != FACTORY_ADDRESS) {
-            revert JpycDistribution__OnlyFactoryAddressIsAllowed();
+            revert Distributor__OnlyFactoryAddressIsAllowed();
         }
         _distribute(token, winners, percentages);
-        emit Distributed(token, winners, percentages);
     }
 
     ////////////////////////////////////////////
     /////// Internal & Private functions ///////
     ////////////////////////////////////////////
     /**
-     * @notice Main logic of distribution is implemented here
-     * @dev A internal function to distribute JPYC to winners
+     * @notice A internal function to distribute JPYC to winners
+     * @dev Main logic of distribution is implemented here
      * @dev The length of winners and percentages must be the same
      * @dev The token address must be either JPYC_V1_ADDRESS or JPYC_V2_ADDRESS
      * @dev The winners and percentages array are supposed not to be so long, so the loop can stay unbounded
@@ -112,10 +113,12 @@ contract Distributor {
      */
     function _distribute(address token, address[] memory winners, uint256[] memory percentages) internal {
         // token address input check
-        if (token == address(0) || token != JPYC_V1_ADDRESS || token != JPYC_V2_ADDRESS) {
-            revert JpycDistribution__InvalidTokenAddress();
+        if (token == address(0)) revert Distributor__NoZeroAddress();
+        if (token != JPYC_V1_ADDRESS || token != JPYC_V2_ADDRESS) {
+            revert Distributor__InvalidTokenAddress();
         }
-        if (winners.length != percentages.length) revert JpycDistribution__MismatchedArrays();
+        // winners and percentages input check
+        if (winners.length == 0 || winners.length != percentages.length) revert Distributor__MismatchedArrays();
         uint256 percentagesLength = percentages.length;
         uint256 totalPercentage;
         for (uint256 i; i < percentagesLength;) {
@@ -126,7 +129,7 @@ contract Distributor {
         }
         // check if totalPercentage is correct
         if (totalPercentage != (10000 - COMMISSION_FEE)) {
-            revert JpycDistribution__MismatchedPercentages();
+            revert Distributor__MismatchedPercentages();
         }
         IERC20 erc20 = IERC20(token);
         uint256 totalAmount = erc20.balanceOf(address(this));
@@ -140,6 +143,7 @@ contract Distributor {
         }
         // send all the remaining tokens to STADIUM_ADDRESS to avoid dust remained in the proxy contract
         _commissionTransfer(erc20);
+        emit Distributed(token, winners, percentages);
     }
 
     /*
