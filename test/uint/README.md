@@ -56,11 +56,17 @@ If the network is Anvil,
   - call it with wrong non-organizer account, then revert
   - call it with wrong data, then revert
   - right arguments, then deploy the proxy and distribute the tokens correctly
-- `deployProxyAndDsitributeBySignature`
-  - TODO:
+- `deployProxyAndDistributeBySignature`
+  - if data is wrong, then revert
+  - if salt is not right, then revert
+    - msg.sender is not the owner
 - `deployProxyAndDsitributeByOwner`
-  - after the contest is set and then tokens has been sent to the proxy address.
-  - 
+  - after the contest is set and then tokens has been sent to the proxy address. 
+    - if proxy is address(0), then revert
+    - if salt to closetime doens't exist, then revert
+    - if salt to closetime is not ready, then revert
+    - if all conditions met, then deploy the proxy and distribute the tokens correctly
+
 - `dsitributeByOwner`
   - after the contest is set and then tokens has been sent to the proxy address. The organizer deployed and distributed the tokens to the winners. we call this function. 
     - if proxy is address(0), then revert
@@ -70,7 +76,10 @@ If the network is Anvil,
     - if caller is not owner, then revert
     - above conditions met, then distribute the tokens correctly. -> rescue tokens
 - `getProxyAddress`
-  - TODO:
+  - if salt is 0, then revert
+  - if salt is not 0, but implementation address is zero, then revert
+  - if salt is not 0, and implementation address is not zero, then return the proxy address correctly
+  - check if the calculated proxy addresses matches the real ones. 
 - `_deployProxy`
   - if the salt is used then revert
   - otherwise, deploy the proxy correctly
@@ -87,6 +96,13 @@ If the network is Anvil,
 > We should test the proxy contract with the implementation contract here. 
 > So we call proxy contract and trigger the logics on the `Distributor` contract.
 
+- `constructor`
+  - if `commission_fee` >10000, then revert
+  - if `factory_address` is address(0), then revert
+  - if `stadium_address` is address(0), then revert
+  - if above conditions met, then set the immutable variables correctly
 - 
 
 ### Fuzzing tests
+
+
