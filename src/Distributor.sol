@@ -23,8 +23,8 @@
 
 pragma solidity 0.8.18;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
+import {SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {ProxyFactory} from "./ProxyFactory.sol";
 
 /*
@@ -48,10 +48,12 @@ contract Distributor {
     //////////////////////////////////////
     /////// Immutable Variables //////////
     //////////////////////////////////////
+    /* solhint-disable */
     uint8 private immutable VERSION; // version is 1 for now
     address private immutable FACTORY_ADDRESS;
     address private immutable STUDIUM_ADDRESS;
     uint256 private immutable COMMISSION_FEE; // uses basis point 10000 = 100%
+    /* solhint-enable */
 
     event Distributed(address token, address[] winners, uint256[] percentages);
 
@@ -61,15 +63,17 @@ contract Distributor {
     /// @dev initiate the contract with factory address and other key addresses, fee rate
     constructor(
         // uint256 version, // for future use
-        address factory_address,
-        address stadium_address,
-        uint256 commission_fee
+        /* solhint-disable */
+        address factoryAddress,
+        address stadiumAddress,
+        uint256 commissionFee
+        /* solhint-disable */
     ) {
-        if (commission_fee > 1000) revert Distributor__InvalidCommissionFee(); // more than 10% is not allowed
-        if (factory_address == address(0) || stadium_address == address(0)) revert Distributor__NoZeroAddress();
-        FACTORY_ADDRESS = factory_address; // initialize with deployed factory address beforehand
-        STUDIUM_ADDRESS = stadium_address;
-        COMMISSION_FEE = commission_fee; // 5% this can be changed in the future
+        if (commissionFee > 1000) revert Distributor__InvalidCommissionFee(); // more than 10% is not allowed
+        if (factoryAddress == address(0) || stadiumAddress == address(0)) revert Distributor__NoZeroAddress();
+        FACTORY_ADDRESS = factoryAddress; // initialize with deployed factory address beforehand
+        STUDIUM_ADDRESS = stadiumAddress;
+        COMMISSION_FEE = commissionFee; // 5% this can be changed in the future
         VERSION = 1;
     }
 
@@ -147,7 +151,7 @@ contract Distributor {
     }
 
     function _isWhiteListed(address token) internal view returns (bool) {
-        return ProxyFactory(FACTORY_ADDRESS).whitelistTokens(token);
+        return ProxyFactory(FACTORY_ADDRESS).whitelistedTokens(token);
     }
 
     ///////////////////////////////////////////

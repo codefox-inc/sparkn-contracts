@@ -23,16 +23,18 @@
 
 pragma solidity 0.8.18;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "./Proxy.sol";
+import {Ownable} from "openzeppelin/access/Ownable.sol";
+import {ECDSA} from "openzeppelin/utils/cryptography/ECDSA.sol";
+import {EIP712} from "openzeppelin/utils/cryptography/EIP712.sol";
+import {Proxy} from "./Proxy.sol";
+
 
 /**
  * @notice This contract is the factory contract which will be used to deploy proxy contracts.
  * @notice It will be used to deploy proxy contracts for every contest in Taibow Stadium.
  * @dev
  */
-contract ProxyFactory is Ownable {
+contract ProxyFactory is Ownable, EIP712 {
     //////////////////////
     /////// Error ////////
     //////////////////////
@@ -63,24 +65,29 @@ contract ProxyFactory is Ownable {
     /// @notice The contest doesn't exist when value is 0
     mapping(bytes32 => uint256) public saltToCloseTime;
     /// @notice record the whitelisted tokens
-    mapping(address => bool) public whitelistTokens;
+    mapping(address => bool) public whitelistedTokens;
 
-    ////////////////////////////////////////////
-    /////// External & Public functions ////////
-    ////////////////////////////////////////////
-    /// @notice The constructor will set the whitelist tokens. e.g. JPYCv1, JPYCv2, USDC, USDT, DAI
-    /// @notice the array is not supposed to be so long
-    constructor(address[] memory _whitelistTokens) {
-        if (_whitelistTokens.length == 0) revert ProxyFactory__NoEmptyArray();
-        for (uint256 i; i < _whitelistTokens.length;) {
-            if (_whitelistTokens[i] == address(0)) revert ProxyFactory__NoZeroAddress();
-            whitelistTokens[_whitelistTokens[i]] = true;
+    ////////////////////////////
+    /////// Constructor ////////
+    ////////////////////////////
+   /** @notice The constructor will set the whitelist tokens. e.g. JPYCv1, JPYCv2, USDC, USDT, DAI
+     * @notice the array is not supposed to be so long
+     * @param _whitelistedTokens The tokens to whitelist
+     */
+    constructor(address[] memory _whitelistedTokens)  EIP712("ProxyFactory", "1") Ownable() {
+        if (_whitelistedTokens.length == 0) revert ProxyFactory__NoEmptyArray();
+        for (uint256 i; i < _whitelistedTokens.length;) {
+            if (_whitelistedTokens[i] == address(0)) revert ProxyFactory__NoZeroAddress();
+            whitelistedTokens[_whitelistedTokens[i]] = true;
             unchecked {
                 i++;
             }
         }
     }
 
+    ////////////////////////////////////////////
+    /////// External & Public functions ////////
+    ////////////////////////////////////////////
     /**
      * @notice Only owner can set contest's properties
      * @notice close time must be less than 14 days from now
@@ -106,7 +113,7 @@ contract ProxyFactory is Ownable {
     }
 
     /**
-     * @notice deploy proxy contract and distribute caller's prize
+     * @notice deploy proxy contract and distribute winner's prize
      * @dev the caller can only control his own contest
      * @param contestId The contest id
      * @param implementation The implementation address
@@ -123,6 +130,7 @@ contract ProxyFactory is Ownable {
     /**
      * @notice deploy proxy contract and distribute prize on behalf of organizer
      * @dev the caller can only control his own contest
+     * @dev It uess EIP712 to verify the signature to avoid replay attacks
      * @param organizer The organizer of the contest
      * @param contestId The contest id
      * @param implementation The implementation address
@@ -157,6 +165,14 @@ contract ProxyFactory is Ownable {
         _distribute(proxy, data);
     }
 
+    /**
+     * @notice Owner can rescue funds if token is stuck.
+     * @param proxy The proxy address
+     * @param organizer The contest organizer
+     * @param contestId The contest id
+     * @param implementation The implementation address
+     * @param data The prize distribution calling data
+     */
     function dsitributeByOwner(
         address proxy,
         address organizer,
@@ -165,15 +181,16 @@ contract ProxyFactory is Ownable {
         bytes calldata data
     ) public onlyOwner {
         if (proxy == address(0)) revert ProxyFactory__ProxyAddressCannotBeZero();
-        // require(proxy != address(0), "Proxy address is zero");
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
+        // distribute only when it exists and expired
         if (saltToCloseTime[salt] >= (block.timestamp + EXPIRATION_TIME)) revert ProxyFactory__ContestIsNotExpired();
         _distribute(proxy, data);
     }
 
     function getProxyAddress(bytes32 salt, address implementation) public view returns (address proxy) {
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
+        if (implementation == address(0)) revert ProxyFactory__NoZeroAddress();
         bytes memory code = abi.encodePacked(type(Proxy).creationCode, uint256(uint160(implementation)));
         bytes32 hash = keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(code)));
         proxy = address(uint160(uint256(hash)));
