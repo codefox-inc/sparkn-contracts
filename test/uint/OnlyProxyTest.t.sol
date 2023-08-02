@@ -8,9 +8,9 @@ import {StdCheats} from "forge-std/StdCheats.sol";
 import {Proxy} from "../../src/Proxy.sol";
 
 contract ProxyTest is StdCheats, Test {
-    Proxy public proxy;
-    Proxy public secondProxy;
-    Proxy public thirdProxy;
+    Proxy proxy;
+    Proxy secondProxy;
+    Proxy thirdProxy;
 
     function setUp() public {
         // deploy contracts
@@ -27,7 +27,28 @@ contract ProxyTest is StdCheats, Test {
         // assertEq(thirdProxy.getImlementation(), makeAddr('randomImplementation2'));
     }
 
-
     /// expected failing pattern
-}
+    function testFallbackFuncitonWillFail() public {
+        // test something
+        vm.expectRevert();
+        (bool success, ) = address(proxy).call(abi.encodeWithSignature("nonExistingFunction()"));
+        // console.log(success);
+        assertEq(success, false);
+    }
 
+    function testFallbackFuncitonWillFailPattern2() public {
+        // test something
+        vm.expectRevert();
+        (bool success, ) = address(proxy).call(abi.encodeWithSignature("getConstants()"));
+        // console.log(success);
+        assertEq(success, false);
+    }
+
+
+    function testCannotSendEtherToProxy() public {
+        vm.deal(msg.sender, 2 ether);
+        vm.expectRevert();
+        (bool success, ) = address(proxy).call{value: 1 ether}('');
+        assertEq(0, address(proxy).balance);
+    }
+}
