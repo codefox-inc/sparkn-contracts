@@ -19,27 +19,26 @@ contract DeployContracts is Script {
         // set up config
         HelperConfig config = new HelperConfig();
         // get the addresses of the tokens to whitelist
-        (address jpycv1Address, address jpycv2Aaddress, address usdcAddress, uint256 deployerKey) =
+        (address jpycv1Address, address jpycv2Aaddress, address usdcAddress,, uint256 deployerKey) =
             config.activeNetworkConfig();
         address[] memory tokensToWhitelist = new address[](3);
         tokensToWhitelist[0] = jpycv1Address;
         tokensToWhitelist[1] = jpycv2Aaddress;
         tokensToWhitelist[2] = usdcAddress;
 
-        console.log("tokensToWhitelist: %s", tokensToWhitelist[0]);
-        console.log("tokensToWhitelist: %s",  tokensToWhitelist[1]);
-        console.log("tokensToWhitelist: %s", tokensToWhitelist[2]);
-        console.log("deployerKey: %s", deployerKey);
-
+        // console.log("tokensToWhitelist: %s", tokensToWhitelist[0]);
+        // console.log("tokensToWhitelist: %s",  tokensToWhitelist[1]);
+        // console.log("tokensToWhitelist: %s", tokensToWhitelist[2]);
+        // console.log("deployerKey: %s", deployerKey);
 
         vm.startBroadcast(deployerKey); // prank
         ProxyFactory proxyFactory = new ProxyFactory(tokensToWhitelist);
-        console.log("proxyFactory Owner: %s", proxyFactory.owner());
-        console.log("address this: %s", address(this));
-        console.log("address deployerKey: %s", deployerKey);
-        console.log("address factoryAdmin: %s", factoryAdmin);
+        // console.log("proxyFactory Owner: %s", proxyFactory.owner());
+        // console.log("address this: %s", address(this));
+        // console.log("address deployerKey: %s", deployerKey);
+        // console.log("address factoryAdmin: %s", factoryAdmin);
         proxyFactory.transferOwnership(factoryAdmin);
-        console.log("After transferring, proxyFactory Owner: %s", proxyFactory.owner());
+        // console.log("After transferring, proxyFactory Owner: %s", proxyFactory.owner());
 
         // deploy distributor - implementation contract
         // 5% as starting fee

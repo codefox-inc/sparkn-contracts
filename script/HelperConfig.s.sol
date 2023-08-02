@@ -2,17 +2,20 @@
 
 pragma solidity ^0.8.18;
 
-import {Script} from "forge-std/Script.sol";
+import {Script, console} from "forge-std/Script.sol";
 import {MockERC20} from "../test/mock/MockERC20.sol";
 
 // This contract script is to deploy the contracts on different networks and can be used for testing purposes
 contract HelperConfig is Script {
+    address public tokenMinter = makeAddr("tokenMinter");
+    address public minter = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
     struct NetworkConfig {
         // deployer's private key
         // address[] tokensToWhitelist;
         address jpycv1Address;
         address jpycv2Address;
         address usdcAddress;
+        address usdtAddress;
         uint256 deployerKey;
     }
 
@@ -51,6 +54,7 @@ contract HelperConfig is Script {
             jpycv1Address: arr[0],
             jpycv2Address: arr[1],
             usdcAddress: arr[2],
+            usdtAddress: address(0),
             deployerKey: vm.envUint("PRIVATE_KEY")
         });
     }
@@ -75,13 +79,26 @@ contract HelperConfig is Script {
             "USD Coin",
             "USDC"
         );
+        MockERC20 usdtMock = new MockERC20(
+            "Tether",
+            "USDT"
+        );
 
         vm.stopBroadcast();
+        // console.log('msgsender: ', msg.sender);
+        // console.log('tokenMinter: ', tokenMinter);
+        // console.log('realMinter: ', jpycV2Mock.owner());
+        vm.startPrank(minter);
+        jpycV2Mock.transferOwnership(tokenMinter);
+        jpycv1Mock.transferOwnership(tokenMinter);
+        usdcMock.transferOwnership(tokenMinter);
+        vm.stopPrank();
 
         return NetworkConfig({
             jpycv1Address: address(jpycV2Mock),
             jpycv2Address: address(jpycv1Mock),
             usdcAddress: address(usdcMock),
+            usdtAddress: address(usdtMock),
             deployerKey: DEFAULT_ANVIL_KEY
         });
     }
