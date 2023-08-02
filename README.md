@@ -15,6 +15,10 @@ $ forge install
 ```bash
 $ make test
 ```
+run a single test
+```bash
+forge test --mt <test_name>
+```
 
 3. Deploy contracts
 ```bash
