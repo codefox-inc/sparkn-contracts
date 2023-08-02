@@ -129,13 +129,13 @@ contract ProxyFactory is Ownable {
      * @param signature The signature from organizer
      * @param data The prize distribution data
      */
-    function deployProxyAndDistributeBySignature( // @audit replay attack?? -> EIP712追加
+    function deployProxyAndDistributeBySignature(
     address organizer, bytes32 contestId, address implementation, bytes calldata signature, bytes calldata data)
         public
     {
-        bytes32 hash = keccak256(abi.encode(contestId, data));
-        if (ECDSA.recover(hash, signature) != organizer) revert ProxyFactory__InvalidSignature();
-        bytes32 salt = _calculateSalt(msg.sender, contestId, implementation);
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(contestId, data)));
+        if (ECDSA.recover(digest, signature) != organizer) revert ProxyFactory__InvalidSignature();
+        bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         if (saltToCloseTime[salt] >= block.timestamp) revert ProxyFactory__ContestIsNotClosed();
         address proxy = _deployProxy(organizer, contestId, implementation);
