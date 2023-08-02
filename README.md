@@ -1,9 +1,9 @@
 # Taibow Stadium
 Taibow Stadium is a Web3 project that aims to build a marketplace for anyone who wants to solve their problems. 
-The contracts in this repository are used to escrow Taibow stadium users' assets on chain. 
+The contracts in this repository are used as escrow of Taibow stadium users' assets on chain. 
 Our goal is to make sure assets on Taibow stadium are safe and transparent no matter who is using it. 
-These contracts are responsible for escrowing users' funds and distribute them to the winners of the contests. 
-We tried to keep the design simple and safe. 
+These contracts are responsible for the escrow of users' funds and distribute them to the winners of the contests. 
+We tried to keep things simple and safe. 
 
 # How to Start
 1. Install dependencies
