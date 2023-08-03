@@ -52,7 +52,9 @@ contract ProxyFactory is Ownable, EIP712 {
     /////////////////////
     /////// Event ///////
     /////////////////////
-    event SetContest(address indexed organizer, bytes32 indexed contestId, uint256 closeTime, address implementation);
+    event SetContest(address indexed organizer, bytes32 indexed contestId, uint256 closeTime, address indexed implementation);
+    event Distributed(address indexed proxy, bytes data);
+    // event ProxyDeployed(address indexed proxy, address indexed organizer, bytes32 indexed contestId, address implementation);
 
     ////////////////////////////////
     /////// State Variables ////////
@@ -131,6 +133,7 @@ contract ProxyFactory is Ownable, EIP712 {
      * @notice deploy proxy contract and distribute prize on behalf of organizer
      * @dev the caller can only control his own contest
      * @dev It uess EIP712 to verify the signature to avoid replay attacks
+     * @dev front run is allowed because it will only help the tx sender
      * @param organizer The organizer of the contest
      * @param contestId The contest id
      * @param implementation The implementation address
@@ -207,6 +210,7 @@ contract ProxyFactory is Ownable, EIP712 {
     function _distribute(address proxy, bytes calldata data) internal {
         (bool success,) = proxy.call(data);
         if (!success) revert ProxyFactory__DelegateCallFailed();
+        emit Distributed(proxy, data);
     }
 
     // @dev Calculate salt using contest organizer address and contestId
