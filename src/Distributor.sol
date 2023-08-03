@@ -111,7 +111,7 @@ contract Distributor {
     function _distribute(address token, address[] memory winners, uint256[] memory percentages) internal {
         // token address input check
         if (token == address(0)) revert Distributor__NoZeroAddress();
-        if (_isWhiteListed(token)) {
+        if (!_isWhiteListed(token)) {
             revert Distributor__InvalidTokenAddress();
         }
         // winners and percentages input check
