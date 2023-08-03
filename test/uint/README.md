@@ -47,6 +47,7 @@ If the network is Anvil,
   -   `closeTime` is more than block.timestamp + MAX_CONTEST_DURATION, then revert
   -   `closeTime` is less than block.timestamp, then revert
   -   `saltToCloseTime[salt] != 0`, then revert
+  -   Called by non-owner, then revert
   -   otherwise, set the contest `saltToCloseTime[salt]` correctly
   -   event emitted correctly
 - `deployProxyAndDsitribute`

@@ -36,7 +36,9 @@ contract ProxyFactoryTest is StdCheats, Test {
     address public organizer = address(11);
     address public sponsor = address(12);
     address public supporter = address(13);
-    address public user = address(14);
+    address public user1 = address(14);
+    address public user2 = address(15);
+    address public user3 = address(16);
 
     // constants
     uint256 public constant STARTING_USER_BALANCE = 10 ether;
@@ -46,6 +48,9 @@ contract ProxyFactoryTest is StdCheats, Test {
     // key
     uint256 public deployerKey;
 
+    // event
+    event SetContest(address indexed organizer, bytes32 indexed contestId, uint256 closeTime, address indexed implementation);
+
     function setUp() public {
         DeployContracts deployContracts = new DeployContracts();
         (proxyFactory, distributor, config) = deployContracts.run();
@@ -53,9 +58,11 @@ contract ProxyFactoryTest is StdCheats, Test {
 
         if (block.chainid == 31337) {
             vm.deal(factoryAdmin, STARTING_USER_BALANCE);
-            vm.deal(user, SMALL_STARTING_USER_BALANCE);
             vm.deal(sponsor, SMALL_STARTING_USER_BALANCE);
             vm.deal(organizer, SMALL_STARTING_USER_BALANCE);
+            vm.deal(user1, SMALL_STARTING_USER_BALANCE);
+            vm.deal(user2, SMALL_STARTING_USER_BALANCE);
+            vm.deal(user3, SMALL_STARTING_USER_BALANCE);
             vm.startPrank(tokenMinter);
             MockERC20(jpycv1Address).mint(sponsor, 100_000 ether); // 100k JPYCv1
             MockERC20(jpycv2Address).mint(sponsor, 300_000 ether); // 300k JPYCv2
@@ -73,7 +80,9 @@ contract ProxyFactoryTest is StdCheats, Test {
         vm.label(organizer, "organizer");
         vm.label(sponsor, "sponsor");
         vm.label(supporter, "supporter");
-        vm.label(user, "user");
+        vm.label(user1, "user1");
+        vm.label(user2, "user2");
+        vm.label(user3, "user3");
         // get the addresses of the tokens to whitelist
         // deploy contracts
         // vm.prank(deployer);
@@ -106,9 +115,11 @@ contract ProxyFactoryTest is StdCheats, Test {
         assertEq(MockERC20(usdcAddress).balanceOf(organizer), 10_000 ether);
 
         assertEq(factoryAdmin.balance, STARTING_USER_BALANCE);
-        assertEq(user.balance, SMALL_STARTING_USER_BALANCE);
         assertEq(sponsor.balance, SMALL_STARTING_USER_BALANCE);
         assertEq(organizer.balance, SMALL_STARTING_USER_BALANCE);
+        assertEq(user1.balance, SMALL_STARTING_USER_BALANCE);
+        assertEq(user2.balance, SMALL_STARTING_USER_BALANCE);
+        assertEq(user3.balance, SMALL_STARTING_USER_BALANCE);
     }
 
     function testSetupOwnersAreOK() public {
@@ -176,7 +187,7 @@ contract ProxyFactoryTest is StdCheats, Test {
     ////////////////
     function testOrganizerIsZeroThenRevert() public {
         bytes32 randomId = keccak256(abi.encode("Jason", "001")); // do not use abi.encodePacked because hash collision can happen.
-        console.logBytes32(randomId);
+        // console.logBytes32(randomId);
         // bytes32 contestId_ = 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef;
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__NoZeroAddress.selector);
@@ -187,7 +198,7 @@ contract ProxyFactoryTest is StdCheats, Test {
 
     function testImplementationIsZeroThenRevert() public {
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
-        console.logBytes32(randomId);
+        // console.logBytes32(randomId);
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__NoZeroAddress.selector);
         proxyFactory.setContest(organizer, randomId, block.timestamp + 1 days, address(0));
@@ -224,19 +235,218 @@ contract ProxyFactoryTest is StdCheats, Test {
         proxyFactory.setContest(organizer, randomId, block.timestamp + 20 days, address(distributor));
         vm.stopPrank();
     }
-    function testSetContestSucessfully() public {
+    
+    function testCalledByNonOwnerThenRevert() public {
+        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+        vm.startPrank(organizer);
+        vm.expectRevert("Ownable: caller is not the owner");
+        proxyFactory.setContest(organizer, randomId, block.timestamp + 20 days, address(distributor));
+        vm.stopPrank();
+    }
+
+    function testSetContestSucessfullyWithEventEmitted() public {
         vm.warp(12345); // warp to 12345 seconds
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
         vm.startPrank(factoryAdmin);
+        vm.expectEmit(true,true,false,true);
+        emit SetContest(organizer, randomId, block.timestamp + 20 days, address(distributor));
         proxyFactory.setContest(organizer, randomId, block.timestamp + 20 days, address(distributor));
         vm.stopPrank();
         bytes32 salt_ = keccak256(abi.encode(organizer, randomId, address(distributor)));
         assertEq(proxyFactory.saltToCloseTime(salt_), block.timestamp + 20 days);
+        assertFalse(proxyFactory.saltToCloseTime(salt_) == block.timestamp + 19 days);
+    }
+
+
+    ///////////////////////
+    // Modifier for test //
+    ///////////////////////
+    // Set contest for `Jason`, `001` and sent JPYC v2 token to the
+    // undeployed proxy contract address and then check the balance
+    modifier setUpContestForJasonAndSentJpycv2Token () {
+        vm.startPrank(factoryAdmin);
+        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+        proxyFactory.setContest(organizer, randomId, block.timestamp + 8 days, address(distributor));
+        vm.stopPrank();
+        bytes32 salt = keccak256(abi.encode(organizer, randomId, address(distributor)));
+        address proxyAddress = proxyFactory.getProxyAddress(salt, address(distributor));
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+        // console.log(MockERC20(jpycv2Address).balanceOf(proxyAddress));
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress), 10000 ether);
+        _;
     }
 
     //////////////////////////////
     // deployProxyAndDistribute //
     //////////////////////////////
+    function testCalledWithContestIdNotExistThenRevert() public setUpContestForJasonAndSentJpycv2Token {
+        // create data with wrong contestId
+        // actually no token in proxy either beforehand
+        address[] memory tokens_ = new address[](1);
+        tokens_[0] = jpycv2Address;
+        bytes32 randomId_ = keccak256(abi.encode("watson", "001"));
+        address[] memory winners = new address[](1);
+        winners[0] = user1;
+        uint256[] memory percentages_ = new uint256[](1);
+        percentages_[0] = 9500;
+        bytes memory data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_);
+        
+        // send erc20 token to the proxy before deployment
+        // bytes32 salt_ = keccak256(abi.encode(organizer, randomId, address(distributor)));
+        // address proxy_ = proxyFactory.getProxyAddress(salt_, address(distributor));
+        // console.log(proxy_);
+        // vm.startPrank(sponsor);
+        // MockERC20(jpycv2Address).transfer(proxy_, 10000 ether);
+        // vm.stopPrank();
+        
+        // deploy proxy and distribute
+        vm.warp(9 days);
+        vm.startPrank(organizer);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        vm.stopPrank();
+    }
+
+    function testCloseTimeNotReachedThenRevert() public setUpContestForJasonAndSentJpycv2Token {
+        // create data with wrong contestId
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        address[] memory tokens_ = new address[](1);
+        tokens_[0] = jpycv2Address;
+        address[] memory winners = new address[](1);
+        winners[0] = user1;
+        uint256[] memory percentages_ = new uint256[](1);
+        percentages_[0] = 9500;
+        bytes memory data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_);
+        // console.log(proxyFactory.saltToCloseTime(keccak256(abi.encode(organizer, randomId_, address(distributor)))));
+        
+        // deploy proxy and distribute
+        vm.startPrank(organizer);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotClosed.selector);
+        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        vm.stopPrank();
+    }
+
+    // create data with wrong implementation address
+    function testCalledWithWrongImplementationAddrThenRevert() public setUpContestForJasonAndSentJpycv2Token {
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        address[] memory tokens_ = new address[](1);
+        tokens_[0] = jpycv2Address;
+        address[] memory winners = new address[](1);
+        winners[0] = user1;
+        uint256[] memory percentages_ = new uint256[](1);
+        percentages_[0] = 9500;
+        bytes memory data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_);
+        // console.log(proxyFactory.saltToCloseTime(keccak256(abi.encode(organizer, randomId_, usdcAddress))));
+
+        vm.warp(9 days);
+        vm.startPrank(organizer);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.deployProxyAndDsitribute(randomId_, usdcAddress, data);
+        vm.stopPrank();
+    }
+
+    function testCalledWithNonOrganizerThenRevert() public setUpContestForJasonAndSentJpycv2Token {
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        address[] memory tokens_ = new address[](1);
+        tokens_[0] = jpycv2Address;
+        address[] memory winners = new address[](1);
+        winners[0] = user1;
+        uint256[] memory percentages_ = new uint256[](1);
+        percentages_[0] = 9500;
+        bytes memory data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_);
+        // console.log(proxyFactory.saltToCloseTime(keccak256(abi.encode(organizer, randomId_, usdcAddress))));
+
+        vm.warp(9 days);
+        vm.startPrank(user1);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        vm.stopPrank();
+    }
+
+    function testCalledWithWrongDataThenRevert() public setUpContestForJasonAndSentJpycv2Token {
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        address[] memory tokens_ = new address[](1);
+        tokens_[0] = jpycv2Address;
+        address[] memory winners = new address[](1);
+        winners[0] = user1;
+        uint256[] memory percentages_ = new uint256[](1);
+        percentages_[0] = 9500;
+        // lack key arguments
+        bytes memory data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, randomId_, winners);
+        // console.log(proxyFactory.saltToCloseTime(keccak256(abi.encode(organizer, randomId_, usdcAddress))));
+
+        vm.warp(9 days);
+        vm.startPrank(organizer);
+        vm.expectRevert(ProxyFactory.ProxyFactory__DelegateCallFailed.selector);
+        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        vm.stopPrank();
+    }
+
+    function testSucceedWhenConditionsIsMet() public setUpContestForJasonAndSentJpycv2Token {
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        address[] memory tokens_ = new address[](1);
+        tokens_[0] = jpycv2Address;
+        address[] memory winners = new address[](1);
+        winners[0] = user1;
+        uint256[] memory percentages_ = new uint256[](1);
+        percentages_[0] = 9500;
+        bytes memory data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_);
+        // console.log(proxyFactory.saltToCloseTime(keccak256(abi.encode(organizer, randomId_, address(distributor)))));
+        
+        // console.log(proxyFactory.whitelistedTokens(jpycv2Address)); // true
+        // console.log(distributor._isWhiteListed(jpycv2Address)); // true
+
+        vm.warp(9 days); // 9 days later
+        vm.startPrank(organizer);
+        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        vm.stopPrank();
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
+    }
+
+    ///////////////////////////////////////////
+    /// deployProxyAndDistributeBySignature ///
+    ///////////////////////////////////////////
+
+
+
+    ///////////////////////////////////////
+    /// deployProxyAndDsitributeByOwner ///
+    ///////////////////////////////////////
+    
+
+
 
     
+    ///////////////////////
+    /// getProxyAddress ///
+    ///////////////////////
+    function testSaltDoesNotExistThenRevert() public {
+        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+        bytes32 salt_ = keccak256(abi.encode(organizer, randomId, address(distributor)));
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.getProxyAddress(salt_, address(distributor));
+    } 
+
+    function testArgumentImplementationIsZeroThenRevert() public setUpContestForJasonAndSentJpycv2Token {
+        bytes32 salt_ = keccak256(abi.encode(organizer, keccak256(abi.encode("Jason", "001")), address(distributor)));
+        vm.expectRevert(ProxyFactory.ProxyFactory__NoZeroAddress.selector);
+        proxyFactory.getProxyAddress(salt_, address(0));
+    }
+
+    function testReturnedAddressIsNotZero() public setUpContestForJasonAndSentJpycv2Token {
+        bytes32 salt_ = keccak256(abi.encode(organizer, keccak256(abi.encode("Jason", "001")), address(distributor)));
+        address calculatedProxyAddress = proxyFactory.getProxyAddress(salt_, address(distributor));
+        assertNotEq(calculatedProxyAddress, address(0));
+    }
+
+    // function testReturnedAddressMatchesRealProxy() public setUpContestForJason {
+        // bytes32 salt_ = keccak256(abi.encode(organizer, keccak256(abi.encode("Jason", "001")), address(distributor)));
+        // address calculatedProxyAddress = proxyFactory.getProxyAddress(salt_, address(distributor));
+        // address realProxyAddress = proxyFactory.deployProxyAndDistribute(organizer, keccak256(abi.encode("Jason", "001")), address(distributor));
+        // assertEq(calculatedProxyAddress, realProxyAddress);
+    // }
+
 }
