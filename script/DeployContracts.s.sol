@@ -19,11 +19,11 @@ contract DeployContracts is Script {
         // set up config
         HelperConfig config = new HelperConfig();
         // get the addresses of the tokens to whitelist
-        (address jpycv1Address, address jpycv2Aaddress, address usdcAddress,, uint256 deployerKey) =
+        (address jpycv1Address, address jpycv2Address, address usdcAddress,, uint256 deployerKey) =
             config.activeNetworkConfig();
         address[] memory tokensToWhitelist = new address[](3);
         tokensToWhitelist[0] = jpycv1Address;
-        tokensToWhitelist[1] = jpycv2Aaddress;
+        tokensToWhitelist[1] = jpycv2Address;
         tokensToWhitelist[2] = usdcAddress;
 
         // console.log("tokensToWhitelist: %s", tokensToWhitelist[0]);
