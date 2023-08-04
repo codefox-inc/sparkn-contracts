@@ -45,6 +45,7 @@ contract Distributor {
     error Distributor__InvalidTokenAddress();
     error Distributor__MismatchedArrays();
     error Distributor__MismatchedPercentages();
+    error Distributor__NoTokenToDistribute();
 
     //////////////////////////////////////
     /////// Immutable Variables //////////
@@ -56,7 +57,7 @@ contract Distributor {
     uint256 private immutable COMMISSION_FEE; // uses basis point 10000 = 100%
     /* solhint-enable */
 
-    event Distributed(address token, address[] winners, uint256[] percentages);
+    event Distributed(address indexed token, address[] winners, uint256[] percentages);
 
     ////////////////////////////
     /////// Constructor ////////
@@ -131,6 +132,8 @@ contract Distributor {
         }
         IERC20 erc20 = IERC20(token);
         uint256 totalAmount = erc20.balanceOf(address(this));
+        if (totalAmount == 0) revert Distributor__NoTokenToDistribute(); // if there is no token to distribute, just return
+
         uint256 winnersLength = winners.length; // cache length
         for (uint256 i; i < winnersLength;) {
             uint256 amount = totalAmount * percentages[i] / 10000;
