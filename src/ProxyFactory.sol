@@ -28,11 +28,10 @@ import {ECDSA} from "openzeppelin/utils/cryptography/ECDSA.sol";
 import {EIP712} from "openzeppelin/utils/cryptography/EIP712.sol";
 import {Proxy} from "./Proxy.sol";
 
-
 /**
  * @notice This contract is the factory contract which will be used to deploy proxy contracts.
  * @notice It will be used to deploy proxy contracts for every contest in Taibow Stadium.
- * @dev
+ * @dev This contract is the main entry point for Taibow Stadium.
  */
 contract ProxyFactory is Ownable, EIP712 {
     //////////////////////
@@ -52,7 +51,9 @@ contract ProxyFactory is Ownable, EIP712 {
     /////////////////////
     /////// Event ///////
     /////////////////////
-    event SetContest(address indexed organizer, bytes32 indexed contestId, uint256 closeTime, address indexed implementation);
+    event SetContest(
+        address indexed organizer, bytes32 indexed contestId, uint256 closeTime, address indexed implementation
+    );
     event Distributed(address indexed proxy, bytes data);
     // event ProxyDeployed(address indexed proxy, address indexed organizer, bytes32 indexed contestId, address implementation);
 
@@ -72,11 +73,12 @@ contract ProxyFactory is Ownable, EIP712 {
     ////////////////////////////
     /////// Constructor ////////
     ////////////////////////////
-   /** @notice The constructor will set the whitelist tokens. e.g. JPYCv1, JPYCv2, USDC, USDT, DAI
+    /**
+     * @notice The constructor will set the whitelist tokens. e.g. JPYCv1, JPYCv2, USDC, USDT, DAI
      * @notice the array is not supposed to be so long
      * @param _whitelistedTokens The tokens to whitelist
      */
-    constructor(address[] memory _whitelistedTokens)  EIP712("ProxyFactory", "1") Ownable() {
+    constructor(address[] memory _whitelistedTokens) EIP712("ProxyFactory", "1") Ownable() {
         if (_whitelistedTokens.length == 0) revert ProxyFactory__NoEmptyArray();
         for (uint256 i; i < _whitelistedTokens.length;) {
             if (_whitelistedTokens[i] == address(0)) revert ProxyFactory__NoZeroAddress();
@@ -120,13 +122,18 @@ contract ProxyFactory is Ownable, EIP712 {
      * @param contestId The contest id
      * @param implementation The implementation address
      * @param data The prize distribution data
+     * @return The proxy address
      */
-    function deployProxyAndDsitribute(bytes32 contestId, address implementation, bytes calldata data) public {
+    function deployProxyAndDsitribute(bytes32 contestId, address implementation, bytes calldata data)
+        public
+        returns (address)
+    {
         bytes32 salt = _calculateSalt(msg.sender, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         if (saltToCloseTime[salt] >= block.timestamp) revert ProxyFactory__ContestIsNotClosed();
         address proxy = _deployProxy(msg.sender, contestId, implementation);
         _distribute(proxy, data);
+        return proxy;
     }
 
     /**
@@ -139,11 +146,15 @@ contract ProxyFactory is Ownable, EIP712 {
      * @param implementation The implementation address
      * @param signature The signature from organizer
      * @param data The prize distribution data
+     * @return The proxy address
      */
     function deployProxyAndDistributeBySignature(
-    address organizer, bytes32 contestId, address implementation, bytes calldata signature, bytes calldata data)
-        public
-    {
+        address organizer,
+        bytes32 contestId,
+        address implementation,
+        bytes calldata signature,
+        bytes calldata data
+    ) public returns (address) {
         bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(contestId, data)));
         if (ECDSA.recover(digest, signature) != organizer) revert ProxyFactory__InvalidSignature();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
@@ -151,25 +162,39 @@ contract ProxyFactory is Ownable, EIP712 {
         if (saltToCloseTime[salt] >= block.timestamp) revert ProxyFactory__ContestIsNotClosed();
         address proxy = _deployProxy(organizer, contestId, implementation);
         _distribute(proxy, data);
+        return proxy;
     }
 
-    function deployProxyAndDsitributeByOwner(
+    /**
+     * @notice deploy proxy contract and distribute prize on behalf of organizer by owner
+     * @notice This can only be called after contest is expired
+     * @dev the caller must be owner
+     * @dev front run is allowed because it will only help the tx sender
+     * @param organizer The organizer of the contest
+     * @param contestId The contest id
+     * @param implementation The implementation address
+     * @param data The prize distribution data
+     * @return The proxy address
+     */
+    function deployProxyAndDistributeByOwner(
         address organizer,
         bytes32 contestId,
         address implementation,
         bytes calldata data
-    ) public onlyOwner {
+    ) public onlyOwner returns (address) {
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
-        if (saltToCloseTime[salt] >= (block.timestamp + EXPIRATION_TIME)) revert ProxyFactory__ContestIsNotExpired();
+        if (saltToCloseTime[salt] + EXPIRATION_TIME >= block.timestamp) revert ProxyFactory__ContestIsNotExpired();
         // require(saltToCloseTime[salt] == 0, "Contest is not registered");
         // require(saltToCloseTime[salt] < block.timestamp + EXPIRATION_TIME, "Contest is not expired");
         address proxy = _deployProxy(organizer, contestId, implementation);
         _distribute(proxy, data);
+        return proxy;
     }
 
     /**
-     * @notice Owner can rescue funds if token is stuck.
+     * @notice Owner can rescue funds if token is stuck after the deployment and contest is over for a while
+     * @dev only owner can call this function and it is supposed not to be called often
      * @param proxy The proxy address
      * @param organizer The contest organizer
      * @param contestId The contest id
@@ -187,7 +212,7 @@ contract ProxyFactory is Ownable, EIP712 {
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         // distribute only when it exists and expired
-        if (saltToCloseTime[salt] >= (block.timestamp + EXPIRATION_TIME)) revert ProxyFactory__ContestIsNotExpired();
+        if (saltToCloseTime[salt] + EXPIRATION_TIME >= block.timestamp) revert ProxyFactory__ContestIsNotExpired();
         _distribute(proxy, data);
     }
 
@@ -199,21 +224,32 @@ contract ProxyFactory is Ownable, EIP712 {
         proxy = address(uint160(uint256(hash)));
     }
 
-    // contestIdにはDB上のcontest_idのハッシュ値、dataには賞金分配情報が入る。
+    /// @dev Deploy proxy and return the proxy address
+    /// @dev This is an internal function
+    /// @param organizer The contest organizer
+    /// @param contestId The contest id
+    /// @param implementation The implementation address
     function _deployProxy(address organizer, bytes32 contestId, address implementation) internal returns (address) {
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         address proxy = address(new Proxy{salt: salt}(implementation));
         return proxy;
     }
 
-    /// @dev The function to be used to call proxy to distribute prizes to the winners
+    /// @dev The internal function to be used to call proxy to distribute prizes to the winners
+    /// @dev the data passed in should be the calling data of the distributing logic
+    /// @param proxy The proxy address
+    /// @param data The prize distribution data
     function _distribute(address proxy, bytes calldata data) internal {
         (bool success,) = proxy.call(data);
         if (!success) revert ProxyFactory__DelegateCallFailed();
         emit Distributed(proxy, data);
     }
 
-    // @dev Calculate salt using contest organizer address and contestId
+    /// @dev Calculate salt using contest organizer address and contestId, implementation address
+    /// @dev This is an internal function 
+    /// @param organizer The contest organizer
+    /// @param contestId The contest id
+    /// @param implementation The implementation address
     function _calculateSalt(address organizer, bytes32 contestId, address implementation)
         internal
         pure

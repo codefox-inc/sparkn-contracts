@@ -24,11 +24,11 @@
 pragma solidity 0.8.18;
 
 /**
+ * @notice This contract is created and paired with every contest in Taibow Stadium.
+ * This disposable contract is supposed to be used during the contest's life cycle.
  * @dev This contract is the proxy contract which will be deployed by the factory contract.
  * This contract is based on OpenZeppelin's Proxy contract.
  * This contract is designed to be with minimal logic in it.
- * @notice This contract is created and paired with every contest in Taibow Stadium.
- * This disposable contract is supposed to be used during the contest's life cycle.
  */
 contract Proxy {
     // implementation address
