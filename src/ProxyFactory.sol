@@ -130,7 +130,8 @@ contract ProxyFactory is Ownable, EIP712 {
     {
         bytes32 salt = _calculateSalt(msg.sender, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
-        if (saltToCloseTime[salt] >= block.timestamp) revert ProxyFactory__ContestIsNotClosed();
+        // can set close time to current time and end it immediately if organizer wish
+        if (saltToCloseTime[salt] > block.timestamp) revert ProxyFactory__ContestIsNotClosed();
         address proxy = _deployProxy(msg.sender, contestId, implementation);
         _distribute(proxy, data);
         return proxy;
@@ -146,7 +147,7 @@ contract ProxyFactory is Ownable, EIP712 {
      * @param implementation The implementation address
      * @param signature The signature from organizer
      * @param data The prize distribution data
-     * @return The proxy address
+     * @return proxy The proxy address
      */
     function deployProxyAndDistributeBySignature(
         address organizer,
@@ -174,7 +175,7 @@ contract ProxyFactory is Ownable, EIP712 {
      * @param contestId The contest id
      * @param implementation The implementation address
      * @param data The prize distribution data
-     * @return The proxy address
+     * @return proxy The proxy address
      */
     function deployProxyAndDistributeByOwner(
         address organizer,
@@ -216,6 +217,11 @@ contract ProxyFactory is Ownable, EIP712 {
         _distribute(proxy, data);
     }
 
+    /// @notice This address can be used to send ERC20 tokens before deployment of proxy
+    /// @dev Calculate the proxy address using salt and implementation address
+    /// @param salt The salt
+    /// @param implementation The implementation address
+    /// @return proxy The calculated proxy address
     function getProxyAddress(bytes32 salt, address implementation) public view returns (address proxy) {
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         if (implementation == address(0)) revert ProxyFactory__NoZeroAddress();
