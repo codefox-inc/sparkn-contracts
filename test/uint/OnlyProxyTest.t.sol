@@ -7,6 +7,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {Proxy} from "../../src/Proxy.sol";
 
+/// test the proxy contract when it is alone
 contract ProxyTest is StdCheats, Test {
     Proxy proxy;
     Proxy secondProxy;
@@ -20,12 +21,12 @@ contract ProxyTest is StdCheats, Test {
     }
 
     /// expected pattern
-    function testImmutableVariableIsSet() public {
+    // function testImmutableVariableIsSet() public {
         // test something
         // assertEq(proxy.getImlementation(), address(1));
         // assertEq(secondProxy.getImlementation(), makeAddr('randomImplementation'));
         // assertEq(thirdProxy.getImlementation(), makeAddr('randomImplementation2'));
-    }
+    // }
 
     /// expected failing pattern
     function testFallbackFuncitonWillFail() public {
@@ -49,6 +50,7 @@ contract ProxyTest is StdCheats, Test {
         vm.deal(msg.sender, 2 ether);
         vm.expectRevert();
         (bool success, ) = address(proxy).call{value: 1 ether}('');
+        // no ether arrived
         assertEq(0, address(proxy).balance);
     }
 }

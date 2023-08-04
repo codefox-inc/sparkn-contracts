@@ -85,14 +85,6 @@ contract ProxyFactoryTest is StdCheats, Test {
         vm.label(user1, "user1");
         vm.label(user2, "user2");
         vm.label(user3, "user3");
-        // get the addresses of the tokens to whitelist
-        // deploy contracts
-        // vm.prank(deployer);
-        // create a list of tokens to whitelist.
-        // here we use JPYC v1, and v2
-        // tokensToWhitelist = [0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB, 0x2370f9d504c7a6E775bf6E14B3F12846b594cD53];
-        // proxyFactory = new ProxyFactory(tokensToWhitelist);
-        // console.log(deployer);
     }
 
     ///////////
@@ -752,10 +744,21 @@ contract ProxyFactoryTest is StdCheats, Test {
         assertFalse(calculatedProxyAddress == address(0));
     }
 
-    // function testReturnedAddressMatchesRealProxy() public setUpContestForJason {
-    // bytes32 salt_ = keccak256(abi.encode(organizer, keccak256(abi.encode("Jason", "001")), address(distributor)));
-    // address calculatedProxyAddress = proxyFactory.getProxyAddress(salt_, address(distributor));
-    // address realProxyAddress = proxyFactory.deployProxyAndDistribute(organizer, keccak256(abi.encode("Jason", "001")), address(distributor));
-    // assertEq(calculatedProxyAddress, realProxyAddress);
-    // }
+    function testReturnedAddressMatchesRealProxy() public setUpContestForJasonAndSentJpycv2Token() {
+        // prepare for data
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes32 salt_ = keccak256(abi.encode(organizer, randomId_, address(distributor)));
+        bytes memory data = createData();
+
+        // calculate proxy address
+        address calculatedProxyAddress = proxyFactory.getProxyAddress(salt_, address(distributor));
+
+        // owner deploy and distribute
+        vm.warp(16 days);
+        vm.startPrank(factoryAdmin);
+        address proxyAddress =
+            proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, address(distributor), data);
+        vm.stopPrank();
+        assertEq(proxyAddress, calculatedProxyAddress);
+    }
 }

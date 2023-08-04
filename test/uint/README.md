@@ -102,7 +102,8 @@ If the network is Anvil,
   - if `factory_address` is address(0), then revert
   - if `stadium_address` is address(0), then revert
   - if above conditions met, then set the immutable variables correctly
-- 
+- `getConstants`
+  - checks the values of the immutable variables are ok
 
 ### Fuzzing tests
 

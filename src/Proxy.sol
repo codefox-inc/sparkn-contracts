@@ -28,7 +28,7 @@ pragma solidity 0.8.18;
  * This disposable contract is supposed to be used during the contest's life cycle.
  * @dev This contract is the proxy contract which will be deployed by the factory contract.
  * This contract is based on OpenZeppelin's Proxy contract.
- * This contract is designed to be with minimal logic in it.
+ * This contract is designed to be with minimal logic in it and this can prevent function signature collision.
  */
 contract Proxy {
     // implementation address
@@ -56,8 +56,4 @@ contract Proxy {
             default { return(ptr, size) }
         }
     }
-
-    // function getImlementation() external view returns (address) { // TODO: maybe remove this function
-    //     return _implementation;
-    // }
 }

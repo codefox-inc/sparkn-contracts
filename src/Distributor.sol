@@ -164,10 +164,11 @@ contract Distributor {
     function getConstants()
         external
         view
-        returns (address _FACTORY_ADDRESS, address _STUDIUM_ADDRESS, uint256 _COMMISSION_FEE)
+        returns (address _FACTORY_ADDRESS, address _STUDIUM_ADDRESS, uint256 _COMMISSION_FEE, uint8 _VERSION)
     {
         _FACTORY_ADDRESS = FACTORY_ADDRESS;
         _STUDIUM_ADDRESS = STUDIUM_ADDRESS;
         _COMMISSION_FEE = COMMISSION_FEE;
+        _VERSION = VERSION;
     }
 }
