@@ -160,7 +160,7 @@ contract ProxyFactory is Ownable, EIP712 {
         if (ECDSA.recover(digest, signature) != organizer) revert ProxyFactory__InvalidSignature();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
-        if (saltToCloseTime[salt] >= block.timestamp) revert ProxyFactory__ContestIsNotClosed();
+        if (saltToCloseTime[salt] > block.timestamp) revert ProxyFactory__ContestIsNotClosed();
         address proxy = _deployProxy(organizer, contestId, implementation);
         _distribute(proxy, data);
         return proxy;
@@ -185,7 +185,7 @@ contract ProxyFactory is Ownable, EIP712 {
     ) public onlyOwner returns (address) {
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
-        if (saltToCloseTime[salt] + EXPIRATION_TIME >= block.timestamp) revert ProxyFactory__ContestIsNotExpired();
+        if (saltToCloseTime[salt] + EXPIRATION_TIME > block.timestamp) revert ProxyFactory__ContestIsNotExpired();
         // require(saltToCloseTime[salt] == 0, "Contest is not registered");
         // require(saltToCloseTime[salt] < block.timestamp + EXPIRATION_TIME, "Contest is not expired");
         address proxy = _deployProxy(organizer, contestId, implementation);
@@ -213,7 +213,7 @@ contract ProxyFactory is Ownable, EIP712 {
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         // distribute only when it exists and expired
-        if (saltToCloseTime[salt] + EXPIRATION_TIME >= block.timestamp) revert ProxyFactory__ContestIsNotExpired();
+        if (saltToCloseTime[salt] + EXPIRATION_TIME > block.timestamp) revert ProxyFactory__ContestIsNotExpired();
         _distribute(proxy, data);
     }
 
