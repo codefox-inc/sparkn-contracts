@@ -31,7 +31,7 @@ contract DistributionTest is StdCheats, Test {
     /////////////////
     // constructor //
     /////////////////
-    function testIfCommissionFeeIsOutofRangeThenRevert() public {
+    function testIfCommissionFeeIsOutOfRangeThenRevert() public {
         // 0%
         new Distributor(factoryAdmin, stadiumAddress, 0);
         // 10%

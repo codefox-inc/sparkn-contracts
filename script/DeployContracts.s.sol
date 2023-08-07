@@ -32,6 +32,7 @@ contract DeployContracts is Script {
         // console.log("deployerKey: %s", deployerKey);
 
         vm.startBroadcast(deployerKey); // prank
+        // console.log("Deploying contracts...sender: ", msg.sender);
         ProxyFactory proxyFactory = new ProxyFactory(tokensToWhitelist);
         // console.log("proxyFactory Owner: %s", proxyFactory.owner());
         // console.log("address this: %s", address(this));
