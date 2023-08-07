@@ -12,9 +12,6 @@ import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {DeployContracts} from "../../script/DeployContracts.s.sol";
 
 contract ProxyTest is StdCheats, Test {
-    // address deployer = makeAddr("deployer");
-    // they are JPYC tokens on polygon mainnet
-    // address[] tokensToWhitelist;
     // main contracts
     ProxyFactory public proxyFactory;
     Proxy public proxy;
@@ -47,7 +44,6 @@ contract ProxyTest is StdCheats, Test {
     // constants
     uint256 public constant STARTING_USER_BALANCE = 10 ether;
     uint256 public constant SMALL_STARTING_USER_BALANCE = 2 ether;
-    uint256 public constant UNIT_ONE = 1e18;
 
     // key
     uint256 public deployerKey;
@@ -120,7 +116,7 @@ contract ProxyTest is StdCheats, Test {
         _;
     }
 
-    function createData() public view returns (bytes memory data) {
+    function createDataToDistributeJpycv2() public view returns (bytes memory data) {
         address[] memory winners = new address[](1);
         winners[0] = user1;
         uint256[] memory percentages_ = new uint256[](1);
@@ -134,7 +130,7 @@ contract ProxyTest is StdCheats, Test {
     //////////////////////
     function testConstantValuesAreOk() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
-        bytes memory data = createData();
+        bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
         deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
         vm.stopPrank();
@@ -154,7 +150,7 @@ contract ProxyTest is StdCheats, Test {
 
     function testIfTxSenderIsNotFactoryThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
-        bytes memory data = createData();
+        bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
         deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
         vm.stopPrank();
@@ -180,15 +176,16 @@ contract ProxyTest is StdCheats, Test {
     }
 
     function testIfTokenAdressIsZeroThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+        // create contest id and then call to deploy proxy and distribute token
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
-        bytes memory data = createData();
+        bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
         deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
 
-        // prepare data
+        // prepare data again
         address[] memory winners = new address[](1);
         winners[0] = user1;
         uint256[] memory percentages_ = new uint256[](1);
@@ -199,7 +196,7 @@ contract ProxyTest is StdCheats, Test {
         MockERC20(jpycv2Address).transfer(deployedProxy, 10000 ether);
         vm.stopPrank();
 
-        // random user wants to call distribute function
+        // factory wants to call distribute function but with address zero
         vm.startPrank(address(proxyFactory));
         vm.expectRevert(Distributor.Distributor__NoZeroAddress.selector);
         proxyWithDistributorLogic.distribute(address(0), winners, percentages_);
@@ -208,7 +205,7 @@ contract ProxyTest is StdCheats, Test {
 
     function testIfTokenAdressIsNotWhitelistedThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
-        bytes memory data = createData();
+        bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
         deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
         vm.stopPrank();
@@ -235,7 +232,7 @@ contract ProxyTest is StdCheats, Test {
 
     function testIfArgumentsLengthNotEqualThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
-        bytes memory data = createData();
+        bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
         deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
         vm.stopPrank();
@@ -263,7 +260,7 @@ contract ProxyTest is StdCheats, Test {
 
     function testIfWinnersLengthIsZeroThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
-        bytes memory data = createData();
+        bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
         deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
         vm.stopPrank();
@@ -289,7 +286,7 @@ contract ProxyTest is StdCheats, Test {
 
     function testIfTotalPercetageIsNotCorrectThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
-        bytes memory data = createData();
+        bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
         deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
         vm.stopPrank();
@@ -323,7 +320,7 @@ contract ProxyTest is StdCheats, Test {
 
         // deploy proxy
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
-        bytes memory data = createData();
+        bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
         deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
         vm.stopPrank();
@@ -363,7 +360,7 @@ contract ProxyTest is StdCheats, Test {
 
         // deploy proxy
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
-        bytes memory data = createData();
+        bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
         deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
         vm.stopPrank();
@@ -387,7 +384,7 @@ contract ProxyTest is StdCheats, Test {
 
         // If all conditions met then call should succeed
         vm.startPrank(address(proxyFactory));
-        vm.expectEmit();
+        vm.expectEmit(true, false, false, false);
         emit Distributed(jpycv1Address, winners, percentages_);
         proxyWithDistributorLogic.distribute(jpycv1Address, winners, percentages_);
         vm.stopPrank();
@@ -406,7 +403,7 @@ contract ProxyTest is StdCheats, Test {
 
         // deploy proxy
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
-        bytes memory data = createData();
+        bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
         deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
         vm.stopPrank();
