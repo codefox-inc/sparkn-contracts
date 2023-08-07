@@ -308,6 +308,7 @@ contract ProxyFactoryTest is StdCheats, Test {
     //////////////////////////////
     // deployProxyAndDistribute //
     //////////////////////////////
+    // contest id set and prize token is sent to the proxy
     function testCalledWithContestIdNotExistThenRevert() public setUpContestForJasonAndSentJpycv2Token(organizer) {
         // create data with wrong contestId
         bytes32 randomId_ = keccak256(abi.encode("Watson", "001"));
@@ -380,7 +381,7 @@ contract ProxyFactoryTest is StdCheats, Test {
         vm.stopPrank();
     }
 
-    function testSucceedWhenConditionsAreMet() public setUpContestForJasonAndSentJpycv2Token(organizer) {
+    function testSucceedsWhenConditionsAreMet() public setUpContestForJasonAndSentJpycv2Token(organizer) {
         // before
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
@@ -409,7 +410,7 @@ contract ProxyFactoryTest is StdCheats, Test {
     ///////////////////////////////////////
     /// deployProxyAndDistributeByOwner ///
     ///////////////////////////////////////
-    function testRevertsIfCalledByNonOwnerdeployProxyAndDistributeByOwner()
+    function testRevertsIfCalledByNonOwnerTodeployProxyAndDistributeByOwner()
         public
         setUpContestForJasonAndSentJpycv2Token(organizer)
     {

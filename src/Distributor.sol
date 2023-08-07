@@ -57,7 +57,7 @@ contract Distributor {
     uint256 private immutable COMMISSION_FEE; // uses basis point 10000 = 100%
     /* solhint-enable */
 
-    event Distributed(address indexed token, address[] winners, uint256[] percentages);
+    event Distributed(address token, address[] winners, uint256[] percentages);
 
     ////////////////////////////
     /////// Constructor ////////

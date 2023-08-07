@@ -49,7 +49,7 @@ contract ProxyTest is StdCheats, Test {
     uint256 public deployerKey;
 
     // event
-    event Distributed(address indexed token, address[] winners, uint256[] percentages);
+    event Distributed(address token, address[] winners, uint256[] percentages);
 
     function setUp() public {
         DeployContracts deployContracts = new DeployContracts();
