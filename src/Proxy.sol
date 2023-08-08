@@ -25,7 +25,7 @@ pragma solidity 0.8.18;
 
 /**
 * @title Proxy contract
- * @notice This contract is created and paired with every contest in SPARKN Stadium.
+ * @notice This contract is created and paired with every contest in SPARKN.
  * This disposable contract is supposed to be used during the contest's life cycle.
  * After the contest is over, this contract will not be used anymore. 
  * In case somebody may send token to this contract by mistake, we added a function 

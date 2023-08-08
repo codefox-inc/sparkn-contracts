@@ -31,8 +31,8 @@ import {Proxy} from "./Proxy.sol";
 /**
  * @title ProxyFactory contract
  * @notice This contract is the factory contract which will be used to deploy proxy contracts.
- * @notice It will be used to deploy proxy contracts for every contest in Sparkn Stadium.
- * @dev This contract is the main entry point for users to use SPARKN Stadium's contracts.
+ * @notice It will be used to deploy proxy contracts for every contest in Sparkn.
+ * @dev This contract is the main entry point for users to use SPARKN's contracts.
  */
 contract ProxyFactory is Ownable, EIP712 {
     //////////////////////
