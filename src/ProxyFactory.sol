@@ -29,9 +29,10 @@ import {EIP712} from "openzeppelin/utils/cryptography/EIP712.sol";
 import {Proxy} from "./Proxy.sol";
 
 /**
+ * @title ProxyFactory contract
  * @notice This contract is the factory contract which will be used to deploy proxy contracts.
- * @notice It will be used to deploy proxy contracts for every contest in Taibow Stadium.
- * @dev This contract is the main entry point for Taibow Stadium.
+ * @notice It will be used to deploy proxy contracts for every contest in Sparkn Stadium.
+ * @dev This contract is the main entry point for users to use SPARKN Stadium's contracts.
  */
 contract ProxyFactory is Ownable, EIP712 {
     //////////////////////
@@ -55,7 +56,6 @@ contract ProxyFactory is Ownable, EIP712 {
         address indexed organizer, bytes32 indexed contestId, uint256 closeTime, address indexed implementation
     );
     event Distributed(address indexed proxy, bytes data);
-    // event ProxyDeployed(address indexed proxy, address indexed organizer, bytes32 indexed contestId, address implementation);
 
     ////////////////////////////////
     /////// State Variables ////////
@@ -65,9 +65,9 @@ contract ProxyFactory is Ownable, EIP712 {
     uint256 public constant MAX_CONTEST_PERIOD = 28 days;
 
     /// @notice record contest close time by salt
-    /// @notice The contest doesn't exist when value is 0
+    /// @dev The contest doesn't exist when value is 0
     mapping(bytes32 => uint256) public saltToCloseTime;
-    /// @notice record the whitelisted tokens
+    /// @dev record whitelisted tokens
     mapping(address => bool) public whitelistedTokens;
 
     ////////////////////////////
@@ -76,7 +76,7 @@ contract ProxyFactory is Ownable, EIP712 {
     /**
      * @notice The constructor will set the whitelist tokens. e.g. JPYCv1, JPYCv2, USDC, USDT, DAI
      * @notice the array is not supposed to be so long
-     * @param _whitelistedTokens The tokens to whitelist
+     * @param _whitelistedTokens The tokens array to get whitelisted
      */
     constructor(address[] memory _whitelistedTokens) EIP712("ProxyFactory", "1") Ownable() {
         if (_whitelistedTokens.length == 0) revert ProxyFactory__NoEmptyArray();
@@ -94,7 +94,7 @@ contract ProxyFactory is Ownable, EIP712 {
     ////////////////////////////////////////////
     /**
      * @notice Only owner can set contest's properties
-     * @notice close time must be less than 14 days from now
+     * @notice close time must be less than 28 days from now
      * @dev Set contest close time, implementation address, organizer, contest id
      * @dev only owner can call this function
      * @param organizer The owner of the contest
@@ -252,7 +252,7 @@ contract ProxyFactory is Ownable, EIP712 {
     }
 
     /// @dev Calculate salt using contest organizer address and contestId, implementation address
-    /// @dev This is an internal function 
+    /// @dev This is an internal function
     /// @param organizer The contest organizer
     /// @param contestId The contest id
     /// @param implementation The implementation address

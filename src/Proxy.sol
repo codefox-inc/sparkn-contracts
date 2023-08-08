@@ -24,16 +24,22 @@
 pragma solidity 0.8.18;
 
 /**
- * @notice This contract is created and paired with every contest in Taibow Stadium.
+* @title Proxy contract
+ * @notice This contract is created and paired with every contest in SPARKN Stadium.
  * This disposable contract is supposed to be used during the contest's life cycle.
- * @dev This contract is the proxy contract which will be deployed by the factory contract.
+ * After the contest is over, this contract will not be used anymore. 
+ * In case somebody may send token to this contract by mistake, we added a function 
+ * in Distributor contract to distribute the token after the contest is over.
+ * @dev This contract is the proxy contract which will be deployed by factory contract.
  * This contract is based on OpenZeppelin's Proxy contract.
- * This contract is designed to be with minimal logic in it and this can prevent function signature collision.
+ * This contract is designed to be with minimal logic in it and in this way, 
+ * it can prevent functions' signature collision.
  */
 contract Proxy {
     // implementation address
     address private immutable _implementation;
 
+    /// @notice constructor
     /// @dev set implementation address
     constructor(address implementation) {
         _implementation = implementation;

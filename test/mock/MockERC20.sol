@@ -29,7 +29,7 @@ import {ERC20} from "openzeppelin/token/ERC20/ERC20.sol";
 import {Ownable} from "openzeppelin/access/Ownable.sol";
 
 /*
- * @title TaibowCoin
+ * @title MockERC20
  * @author CodeFox
  * @dev this is a random ERC20 token for testing purposes
  * This can be supposed to be an stable coin in the current system 
