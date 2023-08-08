@@ -270,12 +270,12 @@ contract ProxyFactoryTest is StdCheats, Test {
     ///////////////////////
     // Set contest for `Jason`, `001` and sent JPYC v2 token to the
     // undeployed proxy contract address and then check the balance
-    modifier setUpContestForJasonAndSentJpycv2Token(address register) {
+    modifier setUpContestForJasonAndSentJpycv2Token(address _organizer) {
         vm.startPrank(factoryAdmin);
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
-        proxyFactory.setContest(register, randomId, block.timestamp + 8 days, address(distributor));
+        proxyFactory.setContest(_organizer, randomId, block.timestamp + 8 days, address(distributor));
         vm.stopPrank();
-        bytes32 salt = keccak256(abi.encode(register, randomId, address(distributor)));
+        bytes32 salt = keccak256(abi.encode(_organizer, randomId, address(distributor)));
         address proxyAddress = proxyFactory.getProxyAddress(salt, address(distributor));
         vm.startPrank(sponsor);
         MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
@@ -402,10 +402,6 @@ contract ProxyFactoryTest is StdCheats, Test {
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
 
-    ///////////////////////////////////////////
-    /// deployProxyAndDistributeBySignature ///
-    ///////////////////////////////////////////
-    // function test
 
     ///////////////////////////////////////
     /// deployProxyAndDistributeByOwner ///
@@ -435,7 +431,7 @@ contract ProxyFactoryTest is StdCheats, Test {
         vm.stopPrank();
     }
 
-    function testRevertsIfCalledWhenContestIsNotExpired() public setUpContestForJasonAndSentJpycv2Token(organizer) {
+    function testRevertsifContestIsNotExpired() public setUpContestForJasonAndSentJpycv2Token(organizer) {
         bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
         bytes memory data = createData();
 

@@ -196,6 +196,7 @@ contract ProxyFactory is Ownable, EIP712 {
     /**
      * @notice Owner can rescue funds if token is stuck after the deployment and contest is over for a while
      * @dev only owner can call this function and it is supposed not to be called often
+     * @dev fee sent to stadium address is included in the logic contract
      * @param proxy The proxy address
      * @param organizer The contest organizer
      * @param contestId The contest id
