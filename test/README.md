@@ -3,7 +3,11 @@
 - `Proxy.sol`
 - `Distributor.sol`
 
-# Tests Description
+# Tests' Description
+All tests are written in Solidity based on Foundry.    
+Tests consist of unit test, integration test, and fuzzing test.   
+After their own test setups, tests are done in the individual test cases.
+
 tests notes: 
 - Consider both the expected test cases and unexpected test cases
 - Make test coverage 100% if possible
