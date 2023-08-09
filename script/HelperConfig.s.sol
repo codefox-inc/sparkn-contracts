@@ -9,6 +9,7 @@ import {MockERC20} from "../test/mock/MockERC20.sol";
 contract HelperConfig is Script {
     address public tokenMinter = makeAddr("tokenMinter");
     address public minter = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
+
     struct NetworkConfig {
         // deployer's private key
         // address[] tokensToWhitelist;

@@ -8,57 +8,14 @@ import {StdCheats} from "forge-std/StdCheats.sol";
 import {Proxy} from "../../src/Proxy.sol";
 import {ProxyFactory} from "../../src/ProxyFactory.sol";
 import {Distributor} from "../../src/Distributor.sol";
-import {HelperConfig} from "../../script/HelperConfig.s.sol";
-import {DeployContracts} from "../../script/DeployContracts.s.sol";
+import {HelperContract} from "./HelperContract.t.sol";
 
-contract ProxyTest is StdCheats, Test {
-    // main contracts
-    ProxyFactory public proxyFactory;
-    Proxy public proxy;
-    Distributor public distributor;
-    // distributor instance through proxy address
-    Distributor public proxyWithDistributorLogic;
-
-    address public deployedProxy;
-
-    // token
-    address public jpycv1Address;
-    address public jpycv2Address;
-    address public usdcAddress;
-    address public usdtAddress;
-
-    // helpers
-    HelperConfig public config;
-
-    // user
-    address public stadiumAddress = makeAddr("stadium");
-    address public factoryAdmin = makeAddr("factoryAdmin");
-    address public tokenMinter = makeAddr("tokenMinter");
-    address public organizer = address(11);
-    address public sponsor = address(12);
-    address public supporter = address(13);
-    address public user1 = address(14);
-    address public user2 = address(15);
-    address public user3 = address(16);
-
-    // constants
-    uint256 public constant STARTING_USER_BALANCE = 10 ether;
-    uint256 public constant SMALL_STARTING_USER_BALANCE = 2 ether;
-
-    // key
-    uint256 public deployerKey;
-
-    // event
-    event Distributed(address token, address[] winners, uint256[] percentages);
+contract ProxyTest is StdCheats, HelperContract {
 
     function setUp() public {
-        DeployContracts deployContracts = new DeployContracts();
-        (proxyFactory, distributor, config) = deployContracts.run();
-        (jpycv1Address, jpycv2Address, usdcAddress, usdtAddress, deployerKey) = config.activeNetworkConfig();
-        // create a distributor instance through proxy
-        proxyWithDistributorLogic = Distributor(address(proxy));
-
+        // set up balances of each token belongs to each user
         if (block.chainid == 31337) {
+            // deal ether
             vm.deal(factoryAdmin, STARTING_USER_BALANCE);
             vm.deal(sponsor, SMALL_STARTING_USER_BALANCE);
             vm.deal(organizer, SMALL_STARTING_USER_BALANCE);
@@ -66,6 +23,7 @@ contract ProxyTest is StdCheats, Test {
             vm.deal(user2, SMALL_STARTING_USER_BALANCE);
             vm.deal(user3, SMALL_STARTING_USER_BALANCE);
             vm.startPrank(tokenMinter);
+            // mint erc20 token
             MockERC20(jpycv1Address).mint(sponsor, 100_000 ether); // 100k JPYCv1
             MockERC20(jpycv2Address).mint(sponsor, 300_000 ether); // 300k JPYCv2
             MockERC20(usdcAddress).mint(sponsor, 10_000 ether); // 10k USDC
@@ -75,7 +33,7 @@ contract ProxyTest is StdCheats, Test {
             vm.stopPrank();
         }
 
-        // label
+        // labels
         vm.label(stadiumAddress, "stadiumAddress");
         vm.label(factoryAdmin, "factoryAdmin");
         vm.label(tokenMinter, "tokenMinter");
@@ -85,14 +43,6 @@ contract ProxyTest is StdCheats, Test {
         vm.label(user1, "user1");
         vm.label(user2, "user2");
         vm.label(user3, "user3");
-        // get the addresses of the tokens to whitelist
-        // deploy contracts
-        // vm.prank(deployer);
-        // create a list of tokens to whitelist.
-        // here we use JPYC v1, and v2
-        // tokensToWhitelist = [0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB, 0x2370f9d504c7a6E775bf6E14B3F12846b594cD53];
-        // proxyFactory = new ProxyFactory(tokensToWhitelist);
-        // console.log(deployer);
     }
 
     // note: should pay attention to both the wanted and unwanted patterns.

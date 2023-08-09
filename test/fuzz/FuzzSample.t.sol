@@ -7,7 +7,7 @@
 // // 1. The total supply of DSC should be less than the total value of collateral
 // // 2. Getter view functions should never revert <- evergreen invariant
 
-pragma solidity ^0.8.18;
+pragma solidity 0.8.18;
 
 /////////////// NOTE
 /////////////// This file is commented out as an example of what open stateful fuzz testing looks like
