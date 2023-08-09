@@ -19,7 +19,7 @@ As a first step, we create the protocol and details of how users want to use it 
   - Proxy.sol
 
 ## Out of Scope
-All the files except the files in the above Scope. 
+Any file except for the files in above Scope. 
 
 ## Contracts
 The contracts in this repository are used as escrow of SPARKN users' assets on chain. 
@@ -41,6 +41,7 @@ There are 3 roles in the protocol.
 - Organizer: The person who creates the contest and is responsible for distributing the prizes to the winners. We also sometimes call it innovator.
 - Sponsor: the person who is willing to fund the contest. Sponsor can be the same person as the organizer or anyone else.
 - Supporter: the person who is willing to help solve the problem. Winners are selected from supporters.
+- Owner: The administrator of the protocol.
 
 ### More Context
 - The contracts is created with the philosophy of "supporter first".     
@@ -80,6 +81,7 @@ Tests are in the `test/` folder. More explanations about test cases can be found
 These are known issues or designed by purpose. 
 - There is a way to rescue the token stuck in the proxy contract after the deployment and distribution of prizes only when the token is whitelisted. If the token is not whitelisted, and then if someone sent the token by mistake, the token will be stuck there forever.
 - Proxy contracts are supposed to be disposed after the contest is over. If there is a need to upgrade the protocol, we will just create a new implementation contract and deploy proxies with the new implementation contract. And so is the factory contract. 
+- Owner is in charge of some of the key functions of the protocol. Owner's centralization risk is not an issue at this moment.
 
 
 

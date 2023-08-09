@@ -231,6 +231,9 @@ contract ProxyFactory is Ownable, EIP712 {
         proxy = address(uint160(uint256(hash)));
     }
 
+    ///////////////////////////////////
+    /////// Internal functions ////////
+    ///////////////////////////////////
     /// @dev Deploy proxy and return the proxy address
     /// @dev This is an internal function
     /// @param organizer The contest organizer
