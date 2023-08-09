@@ -37,7 +37,7 @@ The graph below is the structure of the contracts in the protocol.
 ![contracts structure](contractsStructure.png)
 
 # Roles
-There are 3 roles in the protocol.
+There are mainly 3 roles in the protocol. Another role is the owner. 
 - Organizer: The person who creates the contest and is responsible for distributing the prizes to the winners. We also sometimes call it innovator.
 - Sponsor: the person who is willing to fund the contest. Sponsor can be the same person as the organizer or anyone else.
 - Supporter: the person who is willing to help solve the problem. Winners are selected from supporters.
