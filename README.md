@@ -32,6 +32,16 @@ All the contracts are sitting in the `src/` folder. These are the core contracts
 
 The contracts are supposed to be deployed to any EVM compatible chains.
 
+The graph below is the structure of the contracts in the protocol. 
+
+![contracts structure](contractsStructure.png)
+
+# Roles
+There are 3 roles in the protocol.
+- Organizer: The person who creates the contest and is responsible for distributing the prizes to the winners. We also sometimes call it innovator.
+- Sponsor: the person who is willing to fund the contest. Sponsor can be the same person as the organizer or anyone else.
+- Supporter: the person who is willing to help solve the problem. Winners are selected from supporters.
+
 ### More Context
 - The contracts is created with the philosophy of "supporter first".     
 If a contest is created and funded there is no way to refund. All the funds belongs to the persons who wants to help solve the problem, we call them "supporters". 
@@ -66,10 +76,17 @@ This is a proxy contract. It will be deployed by the factory contract. This cont
 Tests are in the `test/` folder. More explanations about test cases can be found in the test folder's `README.md` file. 
 
 
+## Known Issues
+These are known issues or designed by purpose. 
+- There is a way to rescue the token stuck in the proxy contract after the deployment and distribution of prizes only when the token is whitelisted. If the token is not whitelisted, and then if someone sent the token by mistake, the token will be stuck there forever.
+- Proxy contracts are supposed to be disposed after the contest is over. If there is a need to upgrade the protocol, we will just create a new implementation contract and deploy proxies with the new implementation contract. And so is the factory contract. 
 
 
 
-## 
+## Notes
+We designed the protocol by using a lot of immutable variables. So it is supposed that there is no state variable collision in the system. If you find any issues, please report the issue. 
+
+
 
 # How to Start
 1. Install dependencies
