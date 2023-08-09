@@ -25,44 +25,44 @@ contract DistributionTest is StdCheats, Test {
     ///////////
     function setUp() public {
         // only deploy contracts
-        distributor = new Distributor(factoryAdmin, stadiumAddress, COMMISSION_FEE);
+        distributor = new Distributor(factoryAdmin, stadiumAddress);
     }
 
     /////////////////
     // constructor //
     /////////////////
-    function testIfCommissionFeeIsOutOfRangeThenRevert() public {
-        // 0%
-        new Distributor(factoryAdmin, stadiumAddress, 0);
-        // 10%
-        new Distributor(factoryAdmin, stadiumAddress, 1000);
-        // revert
-        vm.expectRevert(Distributor.Distributor__InvalidCommissionFee.selector);
-        new Distributor(factoryAdmin, stadiumAddress, 1001);
-        // revert
-        vm.expectRevert(Distributor.Distributor__InvalidCommissionFee.selector);
-        new Distributor(factoryAdmin, stadiumAddress, 10001);
-        // revert
-        vm.expectRevert(Distributor.Distributor__InvalidCommissionFee.selector);
-        new Distributor(factoryAdmin, stadiumAddress, 20000);
-    }
+    // function testIfCommissionFeeIsOutOfRangeThenRevert() public {
+    //     // 0%
+    //     new Distributor(factoryAdmin, stadiumAddress, 0);
+    //     // 10%
+    //     new Distributor(factoryAdmin, stadiumAddress, 1000);
+    //     // revert
+    //     vm.expectRevert(Distributor.Distributor__InvalidCommissionFee.selector);
+    //     new Distributor(factoryAdmin, stadiumAddress, 1001);
+    //     // revert
+    //     vm.expectRevert(Distributor.Distributor__InvalidCommissionFee.selector);
+    //     new Distributor(factoryAdmin, stadiumAddress, 10001);
+    //     // revert
+    //     vm.expectRevert(Distributor.Distributor__InvalidCommissionFee.selector);
+    //     new Distributor(factoryAdmin, stadiumAddress, 20000);
+    // }
 
     function testIfFactoryAddressIsZeroThenRevert() public {
         // revert
         vm.expectRevert(Distributor.Distributor__NoZeroAddress.selector);
-        new Distributor(address(0), stadiumAddress, COMMISSION_FEE);
+        new Distributor(address(0), stadiumAddress);
     }
 
     function testIfStadiumAddressIsZeroThenRevert() public {
         // revert
         vm.expectRevert(Distributor.Distributor__NoZeroAddress.selector);
-        new Distributor(factoryAdmin, address(0), COMMISSION_FEE);
+        new Distributor(factoryAdmin, address(0));
     }
 
     function testIfBothAddressesAreZeroThenRevert() public {
         // revert
         vm.expectRevert(Distributor.Distributor__NoZeroAddress.selector);
-        new Distributor(address(0), address(0), COMMISSION_FEE);
+        new Distributor(address(0), address(0));
     }
 
     ////////////////////////////////

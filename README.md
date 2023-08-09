@@ -25,7 +25,7 @@ All the files except the files in the above Scope.
 The contracts in this repository are used as escrow of SPARKN users' assets on chain. 
 Our goal is to make sure assets on SPARKN are safe and transparent no matter who is using it. 
 
-These contracts are responsible for the escrow of users' funds and distribute them to the winners of the contests. 
+These contracts are responsible for the escrow of users' funds and distributing them to the winners of the contests. 
 We tried to keep things simple and safe. 
 
 All the contracts are sitting in the `src/` folder. These are the core contracts of the protocol. 
@@ -84,7 +84,7 @@ These are known issues or designed by purpose.
 
 
 ## Notes
-We designed the protocol by using a lot of immutable variables. So it is supposed that there is no state variable collision in the system. If you find any issues, please report the issue. 
+We have designed the protocol by using a lot of immutable variables. So it is supposed that there is no state variable collision in the system. If you find any issue, please report it to us. 
 
 
 

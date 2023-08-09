@@ -55,7 +55,7 @@ contract Distributor {
     uint8 private immutable VERSION; // version is 1 for now
     address private immutable FACTORY_ADDRESS;
     address private immutable STADIUM_ADDRESS;
-    uint256 private immutable COMMISSION_FEE; // uses basis point 10000 = 100%
+    uint256 private constant COMMISSION_FEE = 500; // uses basis point 10000 = 100%
     /* solhint-enable */
 
     event Distributed(address token, address[] winners, uint256[] percentages);
@@ -68,16 +68,13 @@ contract Distributor {
     constructor(
         // uint256 version, // for future use
         address factoryAddress,
-        address stadiumAddress,
-        uint256 commissionFee
+        address stadiumAddress
     ) 
     /* solhint-enable */
     {
-        if (commissionFee > 1000) revert Distributor__InvalidCommissionFee(); // more than 10% is not allowed
         if (factoryAddress == address(0) || stadiumAddress == address(0)) revert Distributor__NoZeroAddress();
         FACTORY_ADDRESS = factoryAddress; // initialize with deployed factory address beforehand
         STADIUM_ADDRESS = stadiumAddress; // official address to receive commission fee
-        COMMISSION_FEE = commissionFee; // 5%, this can be changed in the future
         VERSION = 1;
     }
 

@@ -43,7 +43,7 @@ contract DeployContracts is Script {
 
         // deploy distributor - implementation contract
         // 5% as starting fee
-        Distributor distributor = new Distributor(address(proxyFactory), stadiumAddress, 500);
+        Distributor distributor = new Distributor(address(proxyFactory), stadiumAddress);
         // no need to deploy proxies in the beginning
         // Proxy proxyA = proxyFactory.deployProxy(address(distributor));
         // Proxy proxyB = proxyFactory.deployProxy(address(distributor));
