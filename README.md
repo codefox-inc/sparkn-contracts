@@ -73,7 +73,7 @@ This is a proxy contract. It will be deployed by the factory contract. This cont
 
 
 ## Tests
-Tests are in the `test/` folder. More explanations about test cases can be found in the test folder's `README.md` file. 
+Tests are in the `test/` folder. More explanations about test cases can be found in the test folder's [`README.md`](https://github.com/codefox-inc/sparkn-contracts/tree/main/test) file. 
 
 
 ## Known Issues
