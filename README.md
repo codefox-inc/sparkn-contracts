@@ -91,17 +91,17 @@ We designed the protocol by using a lot of immutable variables. So it is suppose
 # How to Start
 1. Install dependencies
 ```bash
-$ forge install
+forge install
 ```
 
 2. Run tests
 ```bash
-$ make test
+forge test
 ```
 
 run a single test file
 ```bash
-forge test --mt <file_name>
+forge test --mt <test_function_name>
 ```
 
 see test coverage
@@ -111,7 +111,7 @@ forge coverage
 
 3. Deploy contracts
 ```bash
-$ forge deploy --network <network>
+forge deploy --network <network>
 ```
 
 or deploy to local network
@@ -123,7 +123,7 @@ make deploy
 
 Format the codes
 ```bash
-$ make format
+make format
 ```
 
 
