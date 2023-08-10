@@ -40,6 +40,7 @@ contract Distributor {
     //////////////////////
     /////// Error ////////
     //////////////////////
+
     error Distributor__InvalidCommissionFee();
     error Distributor__NoZeroAddress();
     error Distributor__OnlyFactoryAddressIsAllowed();
@@ -52,10 +53,13 @@ contract Distributor {
     /////// Immutable Variables //////////
     //////////////////////////////////////
     /* solhint-disable */
-    uint8 private immutable VERSION; // version is 1 for now
+    uint8 private constant VERSION = 1; // version is 1 for now
     address private immutable FACTORY_ADDRESS;
     address private immutable STADIUM_ADDRESS;
     uint256 private constant COMMISSION_FEE = 500; // uses basis point 10000 = 100%
+    // a constant value of 10,000 (basis points)
+    uint256 private constant BASIS_POINTS = 10000;
+
     /* solhint-enable */
 
     event Distributed(address token, address[] winners, uint256[] percentages);
@@ -75,7 +79,6 @@ contract Distributor {
         if (factoryAddress == address(0) || stadiumAddress == address(0)) revert Distributor__NoZeroAddress();
         FACTORY_ADDRESS = factoryAddress; // initialize with deployed factory address beforehand
         STADIUM_ADDRESS = stadiumAddress; // official address to receive commission fee
-        VERSION = 1;
     }
 
     ////////////////////////////////////////////
@@ -103,7 +106,7 @@ contract Distributor {
      * @dev Main logic of distribution is implemented here. The length of winners and percentages must be the same
      * The token address must be one of the whitelisted tokens
      * The winners and percentages array are supposed not to be so long, so the loop can stay unbounded
-     * The total percentage must be correct. It must be (100 - COMMITION_FEE). 
+     * The total percentage must be correct. It must be (100 - COMMITION_FEE).
      * Finally send the remained token(fee) to STADIUM_ADDRESS with no dust in the contract
      * @param token The token address
      * @param winners The addresses of winners
@@ -137,7 +140,7 @@ contract Distributor {
 
         uint256 winnersLength = winners.length; // cache length
         for (uint256 i; i < winnersLength;) {
-            uint256 amount = totalAmount * percentages[i] / 10000;
+            uint256 amount = totalAmount * percentages[i] / BASIS_POINTS;
             erc20.safeTransfer(winners[i], amount);
             unchecked {
                 ++i;
