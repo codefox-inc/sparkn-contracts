@@ -10,8 +10,8 @@ Because of this, we have created SPARKN.
 
 # What is SPARKN
 
-SPARKN protocol is a Web3 project that aims to build a marketplace for anyone who wants to solve their problems Or anyone who wants to help solve the problems.
-As a first step, we create the protocol and details of how users want to use it is up to them.
+SPARKN protocol is a Web3 project that aims to build a marketplace for anyone who wants to solve their problems or anyone who wants to help solve the problems.
+As a first step, we have created the protocol in the first place. The details of how to use the protocol is up to the users.
 
 ## Scope
 
@@ -36,10 +36,6 @@ All the contracts are sitting in the `src/` folder. These are the core contracts
 
 The contracts are supposed to be deployed to any EVM compatible chains.
 
-The graph below is the structure of the contracts in the protocol.
-
-![contracts structure](contractsStructure.png)
-
 # Roles
 
 There are mainly 3 roles in the protocol. Another role is the owner.
@@ -48,6 +44,9 @@ There are mainly 3 roles in the protocol. Another role is the owner.
 -   Sponsor: the person who is willing to fund the contest. Sponsor can be the same person as the organizer or anyone else.
 -   Supporter: the person who is willing to help solve the problem. Winners are selected from supporters.
 -   Owner: The administrator of the protocol.
+    The graph below is the structure of the contracts in the protocol.
+
+![contracts structure](contractsStructure.png)
 
 ### More Context
 
@@ -99,7 +98,102 @@ These are known issues or designed by purpose.
 
 ## Notes
 
--   We have designed the protocol by using a lot of immutable variables. So it is supposed that there is no state variable collision in the system. If you find any issue, please report it to us.
+-   We have designed the protocol by using a lot of immutable variables. So it is supposed that there is no state variable collision in the system. If you find any issue, please report it.
+
+## Possible Patterns in Diagram
+
+-   Pattern 1 - Distribute by organizer: Contest created and end by organizer
+
+```mermaid
+sequenceDiagram
+    actor 1 as Owner
+    actor S as Sponsor
+    actor O as Organizer
+    participant PF as ProxyFactory
+    participant P as Proxy
+    participant D as Distributior
+    actor W as Winners
+    1->>PF: setContest()
+    PF-->>P: getProxyAddress()
+    O--xP: send erc20 token
+    S--xP: send erc20 token
+    Note over PF,D: Wait for contest to reach close time
+    O->>PF: deployProxyAndDsitribute()
+    PF-->>P: distribute()
+    P-->>D: delegatecall distribute()
+    P-xW: distribute erc20 token as prizes
+    Note over W: Contest ends
+```
+
+-   Pattern 2 - Distribute by owner: Contest created but organizer did not end it in time
+
+```mermaid
+sequenceDiagram
+    actor 1 as Owner
+    actor S as Sponsor
+    actor O as Organizer
+    participant PF as ProxyFactory
+    participant P as Proxy
+    participant D as Distributior
+    actor W as Winners
+    1->>PF: setContest()
+    PF-->>P: getProxyAddress()
+    O--xP: send erc20 token
+    S--xP: send erc20 token
+    Note over PF,D: Wait for contest to reach close time
+    Note over PF,D: Organizer did not end it in time
+    1->>PF: deployProxyAndDsitributeByOwner()
+    PF-->>P: distribute()
+    P-->>D: delegatecall distribute()
+    P-xW: distribute erc20 token as prizes
+    Note over W: Contest ends
+```
+
+-   Pattern 3 - Distribute by signature: Contest created but owner send tx instead of organizer
+
+```mermaid
+sequenceDiagram
+    actor 1 as Owner
+    actor S as Sponsor
+    actor O as Organizer
+    participant PF as ProxyFactory
+    participant P as Proxy
+    participant D as Distributior
+    actor W as Winners
+    1->>PF: setContest()
+    PF-->>P: getProxyAddress()
+    O--xP: send erc20 token
+    S--xP: send erc20 token
+    Note over PF,D: Wait for contest to reach close time
+    O ->> 1: send signature
+    1->>PF: deployProxyAndDsitributeBySignature()
+    PF->>PF: signature validation is OK
+    PF-->>P: distribute()
+    P-->>D: delegatecall distribute()
+    P-xW: distribute erc20 token as prizes
+    Note over W: Contest ends
+```
+
+-   Pattern 4 - Rescue tokens: Contest created and ended, but for some reason whitelisted tokens are stuck in the proxy
+
+```mermaid
+sequenceDiagram
+    actor 1 as Owner
+    actor S as Sponsor
+    actor O as Organizer
+    participant PF as ProxyFactory
+    participant P as Proxy
+    participant D as Distributior
+    actor A as Anyone
+    Note over 1,D: Contest ended after proxy deployment and distribution
+    Note over P, D: after the contest expired
+    Note over P, D: Whitelisted tokens are stuck here
+    1->>PF: dsitributeByOwner()
+    PF-->>P: distribute()
+    P-->>D: delegatecall distribute()
+    P-xA: rescue erc20 token
+    Note over A: Rescue ends
+```
 
 # How to Start
 
