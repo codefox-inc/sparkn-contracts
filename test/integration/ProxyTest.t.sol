@@ -11,7 +11,6 @@ import {Distributor} from "../../src/Distributor.sol";
 import {HelperContract} from "./HelperContract.t.sol";
 
 contract ProxyTest is StdCheats, HelperContract {
-
     function setUp() public {
         // set up balances of each token belongs to each user
         if (block.chainid == 31337) {
@@ -34,9 +33,6 @@ contract ProxyTest is StdCheats, HelperContract {
         }
 
         // labels
-        vm.label(stadiumAddress, "stadiumAddress");
-        vm.label(factoryAdmin, "factoryAdmin");
-        vm.label(tokenMinter, "tokenMinter");
         vm.label(organizer, "organizer");
         vm.label(sponsor, "sponsor");
         vm.label(supporter, "supporter");
@@ -50,7 +46,7 @@ contract ProxyTest is StdCheats, HelperContract {
     //////////////////
     //// Modifier ////
     //////////////////
-    modifier setUpContestForNameAndSentAmountToken (string memory name, address token, uint256 amount) {
+    modifier setUpContestForNameAndSentAmountToken(string memory name, address token, uint256 amount) {
         // set contest
         vm.startPrank(factoryAdmin);
         bytes32 randomId = keccak256(abi.encode(name, "001"));
@@ -74,11 +70,13 @@ contract ProxyTest is StdCheats, HelperContract {
         data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_);
     }
 
-
     //////////////////////
     //// getConstants ////
     //////////////////////
-    function testConstantValuesAreOk() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+    function testConstantValuesAreOk()
+        public
+        setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
+    {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
@@ -86,19 +84,22 @@ contract ProxyTest is StdCheats, HelperContract {
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
-        (address factoryAddr, address stadiumAddr, uint256 commissionFee, uint8 version) = proxyWithDistributorLogic.getConstants();
+        (address factoryAddr, address stadiumAddr, uint256 commissionFee, uint8 version) =
+            proxyWithDistributorLogic.getConstants();
         assertEq(factoryAddr, address(proxyFactory));
         assertEq(stadiumAddr, stadiumAddress);
         assertEq(commissionFee, 500);
         assertEq(version, 1);
     }
 
-
     ////////////////////
     //// distribute ////
     ////////////////////
 
-    function testIfTxSenderIsNotFactoryThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+    function testIfTxSenderIsNotFactoryThenRevert()
+        public
+        setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
+    {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
@@ -125,7 +126,10 @@ contract ProxyTest is StdCheats, HelperContract {
         vm.stopPrank();
     }
 
-    function testIfTokenAdressIsZeroThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+    function testIfTokenAdressIsZeroThenRevert()
+        public
+        setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
+    {
         // create contest id and then call to deploy proxy and distribute token
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
@@ -140,7 +144,7 @@ contract ProxyTest is StdCheats, HelperContract {
         winners[0] = user1;
         uint256[] memory percentages_ = new uint256[](1);
         percentages_[0] = 9500;
-        
+
         // sponsor send token to proxy by mistake
         vm.startPrank(sponsor);
         MockERC20(jpycv2Address).transfer(deployedProxy, 10000 ether);
@@ -153,7 +157,10 @@ contract ProxyTest is StdCheats, HelperContract {
         vm.stopPrank();
     }
 
-    function testIfTokenAdressIsNotWhitelistedThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+    function testIfTokenAdressIsNotWhitelistedThenRevert()
+        public
+        setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
+    {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
@@ -180,7 +187,10 @@ contract ProxyTest is StdCheats, HelperContract {
         vm.stopPrank();
     }
 
-    function testIfArgumentsLengthNotEqualThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+    function testIfArgumentsLengthNotEqualThenRevert()
+        public
+        setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
+    {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
@@ -208,7 +218,10 @@ contract ProxyTest is StdCheats, HelperContract {
         vm.stopPrank();
     }
 
-    function testIfWinnersLengthIsZeroThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+    function testIfWinnersLengthIsZeroThenRevert()
+        public
+        setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
+    {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
@@ -234,7 +247,10 @@ contract ProxyTest is StdCheats, HelperContract {
         vm.stopPrank();
     }
 
-    function testIfTotalPercetageIsNotCorrectThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+    function testIfTotalPercetageIsNotCorrectThenRevert()
+        public
+        setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
+    {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
@@ -263,7 +279,10 @@ contract ProxyTest is StdCheats, HelperContract {
         vm.stopPrank();
     }
 
-    function testIfAllConditionsMetThenUsdcSendingCallShouldSuceed() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+    function testIfAllConditionsMetThenUsdcSendingCallShouldSuceed()
+        public
+        setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
+    {
         // before
         assertEq(MockERC20(usdcAddress).balanceOf(address(user1)), 0);
         assertEq(MockERC20(usdcAddress).balanceOf(address(user2)), 0);
@@ -276,7 +295,6 @@ contract ProxyTest is StdCheats, HelperContract {
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
-
 
         // prepare data
         address[] memory winners = new address[](2);
@@ -296,14 +314,16 @@ contract ProxyTest is StdCheats, HelperContract {
         proxyWithDistributorLogic.distribute(usdcAddress, winners, percentages_);
         vm.stopPrank();
 
-        // after this, token should be distributed correctly as expected 
+        // after this, token should be distributed correctly as expected
         assertEq(MockERC20(usdcAddress).balanceOf(address(user1)), 900 ether);
         assertEq(MockERC20(usdcAddress).balanceOf(address(user2)), 50 ether);
         assertEq(MockERC20(usdcAddress).balanceOf(stadiumAddress), 50 ether);
     }
 
-
-    function testIfAllConditionsMetThenJpycv2SendingCallShouldSuceed() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+    function testIfAllConditionsMetThenJpycv2SendingCallShouldSuceed()
+        public
+        setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
+    {
         // before
         assertEq(MockERC20(jpycv1Address).balanceOf(address(user1)), 0);
         assertEq(MockERC20(jpycv1Address).balanceOf(address(user2)), 0);
@@ -316,7 +336,6 @@ contract ProxyTest is StdCheats, HelperContract {
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
-
 
         // prepare data
         address[] memory winners = new address[](2);
@@ -339,14 +358,16 @@ contract ProxyTest is StdCheats, HelperContract {
         proxyWithDistributorLogic.distribute(jpycv1Address, winners, percentages_);
         vm.stopPrank();
 
-        // after this, token should be distributed correctly as expected 
+        // after this, token should be distributed correctly as expected
         assertEq(MockERC20(jpycv1Address).balanceOf(address(user1)), 180000 ether);
         assertEq(MockERC20(jpycv1Address).balanceOf(address(user2)), 10000 ether);
         assertEq(MockERC20(jpycv1Address).balanceOf(stadiumAddress), 10000 ether);
     }
 
-
-    function testIfNoTokenToSendInProxyThenRevert() public setUpContestForNameAndSentAmountToken ("James", jpycv2Address, 10000 ether) {
+    function testIfNoTokenToSendInProxyThenRevert()
+        public
+        setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
+    {
         // before
         assertEq(MockERC20(jpycv1Address).balanceOf(address(user1)), 0);
         assertEq(MockERC20(jpycv1Address).balanceOf(address(user2)), 0);
@@ -359,7 +380,6 @@ contract ProxyTest is StdCheats, HelperContract {
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
-
 
         // prepare data
         address[] memory winners = new address[](2);

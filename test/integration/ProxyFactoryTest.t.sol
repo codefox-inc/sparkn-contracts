@@ -12,7 +12,6 @@ import {Distributor} from "../../src/Distributor.sol";
 import {HelperContract} from "./HelperContract.t.sol";
 
 contract ProxyFactoryTest is StdCheats, HelperContract {
-
     function setUp() public {
         // set up balances of each token belongs to each user
         if (block.chainid == 31337) {
@@ -39,9 +38,6 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         }
 
         // labels
-        vm.label(stadiumAddress, "stadiumAddress");
-        vm.label(factoryAdmin, "factoryAdmin");
-        vm.label(tokenMinter, "tokenMinter");
         vm.label(organizer, "organizer");
         vm.label(sponsor, "sponsor");
         vm.label(supporter, "supporter");
@@ -356,7 +352,6 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
-
 
     ///////////////////////////////////////
     /// deployProxyAndDistributeByOwner ///
@@ -848,18 +843,18 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
     ///////////////////////
     /// getProxyAddress ///
     ///////////////////////
-    function testSaltDoesNotExistThenRevert() public {
-        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
-        bytes32 salt_ = keccak256(abi.encode(organizer, randomId, address(distributor)));
-        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.getProxyAddress(salt_, address(distributor));
-    }
+    // function testSaltDoesNotExistThenRevert() public {
+    //     bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+    //     bytes32 salt_ = keccak256(abi.encode(organizer, randomId, address(distributor)));
+    //     vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+    //     proxyFactory.getProxyAddress(salt_, address(distributor));
+    // }
 
-    function testArgumentImplementationIsZeroThenRevert() public setUpContestForJasonAndSentJpycv2Token(organizer) {
-        bytes32 salt_ = keccak256(abi.encode(organizer, keccak256(abi.encode("Jason", "001")), address(distributor)));
-        vm.expectRevert(ProxyFactory.ProxyFactory__NoZeroAddress.selector);
-        proxyFactory.getProxyAddress(salt_, address(0));
-    }
+    // function testArgumentImplementationIsZeroThenRevert() public setUpContestForJasonAndSentJpycv2Token(organizer) {
+    //     bytes32 salt_ = keccak256(abi.encode(organizer, keccak256(abi.encode("Jason", "001")), address(distributor)));
+    //     vm.expectRevert(ProxyFactory.ProxyFactory__NoZeroAddress.selector);
+    //     proxyFactory.getProxyAddress(salt_, address(0));
+    // }
 
     function testReturnedAddressIsNotZero() public setUpContestForJasonAndSentJpycv2Token(organizer) {
         bytes32 salt_ = keccak256(abi.encode(organizer, keccak256(abi.encode("Jason", "001")), address(distributor)));

@@ -4,7 +4,6 @@ pragma solidity ^0.8.18;
 
 import {Script} from "forge-std/Script.sol";
 import {console} from "forge-std/Test.sol";
-
 import {Distributor} from "../src/Distributor.sol";
 import {Proxy} from "../src/Proxy.sol";
 import {ProxyFactory} from "../src/ProxyFactory.sol";
@@ -21,6 +20,7 @@ contract DeployContracts is Script {
         // get the addresses of the tokens to whitelist
         (address jpycv1Address, address jpycv2Address, address usdcAddress,, uint256 deployerKey) =
             config.activeNetworkConfig();
+        // whitelist 3 kinds of tokens
         address[] memory tokensToWhitelist = new address[](3);
         tokensToWhitelist[0] = jpycv1Address;
         tokensToWhitelist[1] = jpycv2Address;
