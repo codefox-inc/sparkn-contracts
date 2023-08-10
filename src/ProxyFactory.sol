@@ -224,8 +224,6 @@ contract ProxyFactory is Ownable, EIP712 {
     /// @param implementation The implementation address
     /// @return proxy The calculated proxy address
     function getProxyAddress(bytes32 salt, address implementation) public view returns (address proxy) {
-        if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
-        if (implementation == address(0)) revert ProxyFactory__NoZeroAddress();
         bytes memory code = abi.encodePacked(type(Proxy).creationCode, uint256(uint160(implementation)));
         bytes32 hash = keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(code)));
         proxy = address(uint160(uint256(hash)));
