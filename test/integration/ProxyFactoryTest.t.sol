@@ -381,7 +381,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.stopPrank();
     }
 
-    function testRevertsifContestIsNotExpired() public setUpContestForJasonAndSentJpycv2Token(organizer) {
+    function testRevertsIfContestIsNotExpired() public setUpContestForJasonAndSentJpycv2Token(organizer) {
         bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
         bytes memory data = createData();
 

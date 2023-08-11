@@ -12,6 +12,8 @@ import {Distributor} from "../../src/Distributor.sol";
 import {HelperContract} from "../integration/HelperContract.t.sol";
 
 contract FuzzTestProxyFactory is StdCheats, HelperContract {
+    bytes32 constant SOMEID = keccak256(abi.encode("Jason", "001"));
+
     function setUp() public {
         // set up balances of each token belongs to each user
         if (block.chainid == 31337) {
@@ -266,5 +268,307 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), randomNum_ * 1e18);
         assertEq(MockERC20(jpycv2Address).balanceOf(user2), 9500 * 1e18 - randomNum_ * 1e18);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
+    }
+
+    ///////////////////////////////////////
+    /// deployProxyAndDistributeByOwner ///
+    ///////////////////////////////////////
+    function testFuzzRevertsIfCalledByNonOwnerTodeployProxy(address randomUsr)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        vm.assume(randomUsr != factoryAdmin);
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes memory data = createData(5000);
+
+        vm.warp(8 days);
+        vm.startPrank(randomUsr);
+        vm.expectRevert("Ownable: caller is not the owner");
+        proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, address(distributor), data);
+        vm.stopPrank();
+    }
+
+    function testFuzzRevertsIfCalledWithWrongContestId(bytes32 randomId_)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        vm.assume(randomId_ != keccak256(abi.encode("Jason", "001")));
+        bytes memory data = createData(5000);
+
+        vm.warp(9 days);
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, address(distributor), data);
+        vm.stopPrank();
+    }
+
+    function testFuzzRevertsIfCalledWithWrongDistributor(address randomDistributor)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        vm.assume(randomDistributor != address(distributor));
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes memory data = createData(5000);
+
+        vm.warp(9 days);
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, randomDistributor, data);
+        vm.stopPrank();
+    }
+
+    function testFuzzRevertsIfContestIsNotExpired(uint32 randomTime)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        vm.assume(randomTime < 8 days);
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes memory data = createData(5000);
+
+        vm.warp(randomTime);
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotExpired.selector);
+        proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, address(distributor), data);
+        vm.stopPrank();
+    }
+
+    function testFuzzRevertsIfCalledWithWrongImplementation(address randomImple)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        vm.assume(randomImple != address(distributor));
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes memory data = createData(5000);
+
+        vm.warp(16 days);
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, address(randomImple), data);
+        vm.stopPrank();
+    }
+
+    function testFuzzSucceedsIfAllConditionsMet(uint256 randomNum)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        // before
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user2), 0 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
+        // bounded random number
+        uint256 randomNum_ = bound(randomNum, 0, 9500);
+
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes memory data = createData(randomNum_);
+
+        vm.warp(8.01 days);
+        vm.startPrank(factoryAdmin);
+        proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, address(distributor), data);
+        vm.stopPrank();
+
+        // after
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), randomNum_ * 1e18);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user2), (9500 - randomNum_) * 1e18);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
+    }
+
+    /////////////////////////
+    /// dsitributeByOwner ///
+    /////////////////////////
+    function testFuzzRevertsIfContestIdIsNotRightDistributeByOwner(bytes32 randomId_)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        vm.assume(randomId_ != keccak256(abi.encode("Jason", "001")));
+        bytes32 someId = keccak256(abi.encode("Jason", "001"));
+        bytes memory data = createData(5000);
+
+        vm.warp(8.01 days);
+        vm.startPrank(organizer);
+        address proxyAddress = proxyFactory.deployProxyAndDsitribute(someId, address(distributor), data);
+        vm.stopPrank();
+
+        // sponsor send token to proxy by mistake
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+        bytes memory dataToSendToAdmin = createDataToSendToAdmin();
+
+        // 15 days is the edge of close time, after that tx can go through
+        vm.warp(16 days);
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.dsitributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        vm.stopPrank();
+    }
+
+    function testFuzzRevertsIfImplementationIsNotRightDistributeByOwner(address randomImple)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        // prepare for data
+        bytes memory data = createData(5000);
+        // set assuming
+        vm.assume(randomImple != address(distributor));
+        vm.assume(randomImple != address(0));
+
+        // owner deploy and distribute
+        vm.warp(9 days);
+        vm.startPrank(organizer);
+        address proxyAddress = proxyFactory.deployProxyAndDsitribute(SOMEID, address(distributor), data);
+        vm.stopPrank();
+
+        // sponsor send token to proxy by mistake
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+        // create data to send the token to admin
+        bytes memory dataToSendToAdmin = createDataToSendToAdmin();
+
+        // 15 days is the edge of close time, after that tx can go through
+        vm.warp(8.01 days);
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.dsitributeByOwner(proxyAddress, organizer, SOMEID, randomImple, dataToSendToAdmin);
+        vm.stopPrank();
+    }
+
+    function testFuzzRevertsIfOrganizerIsNotRightDistributeByOwner(address randomUsr)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        // prepare for data
+        bytes memory data = createData(5000);
+
+        // assume random user is not organizer or zero
+        vm.assume(randomUsr != organizer);
+        vm.assume(randomUsr != address(0));
+
+        // owner deploy and distribute
+        vm.warp(9 days);
+        vm.startPrank(organizer);
+        address proxyAddress = proxyFactory.deployProxyAndDsitribute(SOMEID, address(distributor), data);
+        vm.stopPrank();
+
+        // sponsor send token to proxy by mistake
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+        // create data to send the token to admin
+        bytes memory dataToSendToAdmin = createDataToSendToAdmin();
+
+        // 15 days is the edge of close time, after that tx can go through
+        vm.warp(8.01 days);
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.dsitributeByOwner(proxyAddress, randomUsr, SOMEID, address(distributor), dataToSendToAdmin);
+        vm.stopPrank();
+    }
+
+    function testFuzzRevertsIfClosetimeIsNotReadyDistributeByOwner(uint256 randomTime)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        // prepare for data
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes memory data = createData(5000);
+        vm.assume(randomTime < 8 days);
+
+        // owner deploy and distribute
+        vm.warp(2 days);
+        vm.startPrank(organizer);
+        address proxyAddress = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        vm.stopPrank();
+
+        // sponsor send token to proxy by mistake
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+        // create data to send the token to admin
+        bytes memory dataToSendToAdmin = createDataToSendToAdmin();
+
+        // 15 days is the edge of close time, after that tx can go through
+        vm.warp(randomTime);
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotExpired.selector);
+        proxyFactory.dsitributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        vm.stopPrank();
+    }
+
+    function testFuzzRevertsIfCalledByNonOwnerDsitributeByOwner(address randomUsr)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        // prepare for data
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes memory data = createData(5000);
+        vm.assume(randomUsr != factoryAdmin);
+        vm.assume(randomUsr != address(0));
+
+        // owner deploy and distribute
+        vm.warp(16 days);
+        vm.startPrank(factoryAdmin);
+        address proxyAddress =
+            proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, address(distributor), data);
+        vm.stopPrank();
+
+        // sponsor send token to proxy by mistake
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+        // create data to send the token to admin
+        bytes memory dataToSendToAdmin = createDataToSendToAdmin();
+
+        vm.warp(16 days);
+        vm.startPrank(randomUsr);
+        vm.expectRevert("Ownable: caller is not the owner");
+        proxyFactory.dsitributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        vm.stopPrank();
+    }
+
+    function testFuzzSucceedIfAllConditionsMetDistributeByOwner(uint256 randomNum)
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+    {
+        // before
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user2), 0 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
+
+        // assume randomNum is in range of 0 ~ 9500
+        uint256 randomNum_ = bound(randomNum, 0, 9500);
+
+        // prepare for data
+        bytes32 salt_ = keccak256(abi.encode(organizer, SOMEID, address(distributor)));
+        bytes memory data = createData(randomNum_);
+
+        // calculate proxy address
+        address calculatedProxyAddress = proxyFactory.getProxyAddress(salt_, address(distributor));
+
+        // owner deploy and distribute
+        vm.warp(16 days);
+        vm.startPrank(factoryAdmin);
+        address proxyAddress =
+            proxyFactory.deployProxyAndDistributeByOwner(organizer, SOMEID, address(distributor), data);
+        vm.stopPrank();
+        assertEq(proxyAddress, calculatedProxyAddress);
+
+        // sponsor send token to proxy by mistake
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+
+        bytes memory dataToSendToAdmin = createDataToSendToAdmin();
+        vm.startPrank(factoryAdmin);
+        proxyFactory.dsitributeByOwner(
+            calculatedProxyAddress, organizer, SOMEID, address(distributor), dataToSendToAdmin
+        );
+        vm.stopPrank();
+
+        // after
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), randomNum_ * 1e18);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user2), (9500 - randomNum_) * 1e18);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 10500 ether);
+        // stadiumAddress get 500 ether from sponsor and then get all the token sent from sponsor by mistake.
     }
 }
