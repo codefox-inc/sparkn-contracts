@@ -102,11 +102,7 @@ These are known issues or designed by purpose.
 
 ## Sequence Diagram of the Protocol
 
-できたら、ライフラインを表示させる
-sponsor から proxyFactory が正しい:getProxyAddress
-Proxy のデプロイを表現
-実線は呼び出し、点線は応答を意味する
-alt と opt で一つのグラフで表現できる
+This sequence diagram shows how the protocol works considering the process of the contest with the actors in the protocol.
 
 ```mermaid
 sequenceDiagram
