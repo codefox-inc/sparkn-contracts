@@ -1,17 +1,17 @@
 # Incentive
 
-Nowadays information is spread around the world in an incredible speed. However, in some isolated area the information gap is too substantial to conquer the problems. One of the biggest problems we noticed is neither there are talented people nor incentives to create great ideas in some of the ares.
+Nowadays information is spread around the world in an incredible speed. However, in some isolated area the information gap is too substantial to overcome the problems. One of the biggest problems we noticed is neither there are talented people nor incentives to create great ideas in some of these areas.
 
 We found that there are many problems can be solved by the community in a more innovative and open way if things are done openly and smartly with adequate incentives.
 
-We think if more problem can solved, then more value can be created. And if more value can be created, then more people can get the benefites.
+We believe that if more problems can solved, then more value can be created. And if more value can be created, then more people can receive the benefites.
 
-Because of this, we have created SPARKN.
+Because of this, we have created **SPARKN**.
 
 # What is SPARKN
 
-SPARKN protocol is a Web3 project that aims to build a marketplace for anyone who wants to solve their problems or anyone who wants to help solve the problems.
-As a first step, we have created the protocol in the first place. The details of how to use the protocol is up to the users.
+The SPARKN protocol is a Web3 project that aims to build a marketplace for anyone who wants to solve their problems or anyone who wants to help solve problems.
+As a first step, we have created the protocol. The details of how to use the protocol is up to the users.
 
 ## Scope
 
@@ -22,59 +22,63 @@ As a first step, we have created the protocol in the first place. The details of
 
 ## Out of Scope
 
-Any file except for the files in above Scope.
+Any file except for the files in the above Scope.
 
 ## Contracts
 
-The contracts in this repository are used as escrow of SPARKN users' assets on chain.
-Our goal is to make sure assets on SPARKN are safe and transparent no matter who is using it.
+The contracts in this repository are used as escrows for SPARKN users' assets on-chain.
+Our goal is to make sure assets on SPARKN are safe and transparent, no matter who is using it.
 
-These contracts are responsible for the escrow of users' funds and distributing them to the winners of the contests.
-We tried to keep things simple and safe.
+These contracts are responsible for the escrowing of users' funds and distributing them to the winners of the contests. We tried to keep things simple and safe.
 
 All the contracts are sitting in the `src/` folder. These are the core contracts of the protocol.
 
-The contracts are supposed to be deployed to any EVM compatible chains.
+The contracts are supposed to be deployed to any EVM-compatible chains.
 
 # Roles
 
 There are mainly 3 roles in the protocol. Another role is the owner.
 
--   Organizer: The person who creates the contest and is responsible for distributing the prizes to the winners. We also sometimes call it innovator.
--   Sponsor: the person who is willing to fund the contest. Sponsor can be the same person as the organizer or anyone else.
--   Supporter: the person who is willing to help solve the problem. Winners are selected from supporters.
+-   Organizer: The person who creates the contest and is responsible for distributing the prizes to the winners. We also sometimes call this person an innovator.
+-   Sponsor: the person who is willing to fund the contest. Sponsor can be the same person as the organizer or someone else.
+-   Supporter: the person who is willing to help solve the problem. Winners are selected from the supporters.
 -   Owner: The administrator of the protocol.
-    The graph below is the structure of the contracts in the protocol.
+
+The graph below is the structure of the contracts' relationship in the protocol.
 
 ![contracts structure](contractsStructure.png)
 
 ### More Context
 
--   The contracts is created with the philosophy of "supporter first".  
-    If a contest is created and funded there is no way to refund. All the funds belongs to the persons who wants to help solve the problem, we call them "supporters".
--   SPARKN protocol consists of both web3 and web3, and the system can be changed in the future. Because the structure of the contracts are very simple and straightforward, and at the same time, all contests have their own life cycle. After the contests' life cycle endds, it is easy to upgrade the system in the future when we decided to do it with new contests since then.
+-   The contracts is created with the philosophy of "supporter first".
+
+If a contest is created and funded, there is no way to refund. All the funds belong to the persons who wants to help solve the problem, we call them "supporters".
+
+-   SPARKN protocol consists of both web2 and web3, and the system can be upgraded in the future. Because the structure of the contracts are simple and straightforward, and at the same time, all contests have their own life cycle, it is easy to upgrade the system in the future. Once a contest's life cycle ends, we can decide to introduce new contests with any necessary upgrades from that point on.
 
 #### `ProxyFactory.sol`
 
-This the main entry point of the protocol.
+This is the main entry point of the protocol.
+
 It has several functions.
 
 -   Owner can use it to set new contests.
--   Organizer can use it to deploy proxy and distribute prizes to winners.
--   Organizer can use meta transaction to send signature to someone else to deploy proxy and distribute prizes to winners.
--   Owner can deploy proxy and distribute prizes to winners if organizer did not call the function in time to distribute prizes to winners.
--   Owner can distribute the token stuck in the proxy after its depployment.
+-   The organizer can use it to deploy proxy and distribute prizes to winners.
+-   The organizer can use meta transaction to send signature to someone else to deploy proxy and distribute prizes to winners.
+-   The owner can deploy proxy and distribute prizes to winners if organizer did not call the function in time.
+-   The owner can distribute the tokens stuck in the proxy after its depployment.
 -   Anyone can call `getProxyAddress()` to get the address of the proxy.
--   It has a whitelist inside.
+-   It contains a whitelist.
 
 #### `Distributor.sol`
 
-This is a contract used as logic contract of the proxy. It will not be used as a single contract, but it will be called through proxy as delegate calls.  
-It has function as follows.
+This is a contract used as the logic contract of the proxy. It will not be used as a single contract, but it will be called through proxy as delegate calls.
 
--   Only proxy factory can call `distribute` function to distribute prizes to winners.
+Its functions are as follows:
+
+-   Only the proxy factory can call the `distribute` function to distribute prizes to winners.
 -   During the distribution of prizes, a certain portion of the token in the proxy contract will be sent to the stadium address as fee.
--   During the calls, it will check the whitelist in factory contract.
+-   During the calls, it will check the whitelist in the factory contract.
 
 #### `Proxy.sol`
 
