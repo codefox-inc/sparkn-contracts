@@ -128,44 +128,30 @@ sequenceDiagram
         alt Pattern 1: Distribute by organizer
         Note over O: When organizer is active to end the contest
             O->>PF: deployProxyAndDsitribute()
-            PF-->>P: deploy proxy and calls distribute()
-            activate P
-            P-->>D: delegatecall distribute()
-            P-xW: distribute erc20 token as prizes
-            P-->>PF: Proxy address
-            PF-->>O: Proxy address
-            deactivate P
     else Pattern 2: Distribute by signature
     Note over O: When organizer is active and wants to use meta tx
         O ->> 1: send signature
         1->>PF: deployProxyAndDsitributeBySignature()
-        opt
-            note over PF: signature validation is OK
-            PF->>P: deploy proxy and calls distribute()
-            activate P
-            P->>D: delegatecall distribute()
-            P-xW: distribute erc20 token as prizes
-            P-->>PF: Proxy address
-            PF-->>O: Proxy address
-            deactivate P
-        end
+        note over PF: signature validation is OK
     else Pattern 3: Distribute by owner
+    Note over 1,W: Contest Expiration Phase
         Note over O: When organizer is not active
         Note over PF, D: And if contest is expired
         1->>PF: deployProxyAndDsitributeByOwner()
-        PF->>P: deploy proxy and calls distribute()
-        activate P
-        P->>D: delegatecall distribute()
-        P->W: distribute erc20 token as prizes
-        P-->>PF: Proxy address
-        PF-->>O: Proxy address
-        deactivate P
     end
     end
+    PF-->>P: deploy proxy and calls distribute()
+    activate P
+    P-->>D: delegatecall distribute()
+    P-xW: distribute erc20 token as prizes
+    P-->>PF: Proxy address
+    PF-->>O: Proxy address
+    deactivate P
     rect rgba(0, 0, 255, 0.1)
         opt
             activate P
-            Note over P: If after contest is expired and Proxy is deployed and token is distributed
+            Note over 1,W: Contest Expiration Phase
+            Note over P: Proxy is deployed and token is distributed
             Note over P: If whitelisted tokens are sent by mistake
             1->>PF: dsitributeByOwner()
             PF->>P: deploy proxy and calls distribute
