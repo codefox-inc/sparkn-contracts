@@ -100,32 +100,13 @@ These are known issues or designed by purpose.
 
 -   We have designed the protocol by using a lot of immutable variables. So it is supposed that there is no state variable collision in the system. If you find any issue, please report it.
 
-## Possible Patterns in Diagram
+## Sequence Diagram of the Protocol
 
--   Pattern 1 - Distribute by organizer: Contest created and end by organizer
-
-```mermaid
-sequenceDiagram
-    actor 1 as Owner
-    actor S as Sponsor
-    actor O as Organizer
-    participant PF as ProxyFactory
-    participant P as Proxy
-    participant D as Distributior
-    actor W as Winners
-    1->>PF: setContest()
-    PF-->>P: getProxyAddress()
-    O--xP: send erc20 token
-    S--xP: send erc20 token
-    Note over PF,D: Wait for contest to reach close time
-    O->>PF: deployProxyAndDsitribute()
-    PF-->>P: distribute()
-    P-->>D: delegatecall distribute()
-    P-xW: distribute erc20 token as prizes
-    Note over W: Contest ends
-```
-
--   Pattern 2 - Distribute by owner: Contest created but organizer did not end it in time
+できたら、ライフラインを表示させる
+sponsor から proxyFactory が正しい:getProxyAddress
+Proxy のデプロイを表現
+実線は呼び出し、点線は応答を意味する
+alt と opt で一つのグラフで表現できる
 
 ```mermaid
 sequenceDiagram
@@ -136,63 +117,71 @@ sequenceDiagram
     participant P as Proxy
     participant D as Distributior
     actor W as Winners
+    actor RT as rescue requestor
+    Note over 1,W: Contest Preparation Phase
+    activate PF
+    activate D
     1->>PF: setContest()
-    PF-->>P: getProxyAddress()
-    O--xP: send erc20 token
-    S--xP: send erc20 token
+    PF-->>S: getProxyAddress()
+    S->>P: send erc20 token
+    PF-->>O: getProxyAddress()
+    O->>P: send erc20 token
     Note over PF,D: Wait for contest to reach close time
-    Note over PF,D: Organizer did not end it in time
-    1->>PF: deployProxyAndDsitributeByOwner()
-    PF-->>P: distribute()
-    P-->>D: delegatecall distribute()
-    P-xW: distribute erc20 token as prizes
-    Note over W: Contest ends
-```
+    Note over 1,W: Distribution Phase
+    rect rgba(0, 255, 0, 0.1)
+        alt Pattern 1: Distribute by organizer
+        Note over O: When organizer is active to end the contest
+            O->>PF: deployProxyAndDsitribute()
+            PF-->>P: deploy proxy and calls distribute()
+            activate P
+            P-->>D: delegatecall distribute()
+            P-xW: distribute erc20 token as prizes
+            P-->>PF: Proxy address
+            PF-->>O: Proxy address
+            deactivate P
+    else Pattern 2: Distribute by signature
+    Note over O: When organizer is active and wants to use meta tx
+        O ->> 1: send signature
+        1->>PF: deployProxyAndDsitributeBySignature()
+        opt
+            note over PF: signature validation is OK
+            PF->>P: deploy proxy and calls distribute()
+            activate P
+            P->>D: delegatecall distribute()
+            P-xW: distribute erc20 token as prizes
+            P-->>PF: Proxy address
+            PF-->>O: Proxy address
+            deactivate P
+        end
+    else Pattern 3: Distribute by owner
+        Note over O: When organizer is not active
+        Note over PF, D: And if contest is expired
+        1->>PF: deployProxyAndDsitributeByOwner()
+        PF->>P: deploy proxy and calls distribute()
+        activate P
+        P->>D: delegatecall distribute()
+        P->W: distribute erc20 token as prizes
+        P-->>PF: Proxy address
+        PF-->>O: Proxy address
+        deactivate P
+    end
+    end
+    rect rgba(0, 0, 255, 0.1)
+        opt
+            activate P
+            Note over P: If after contest is expired and Proxy is deployed and token is distributed
+            Note over P: If whitelisted tokens are sent by mistake
+            1->>PF: dsitributeByOwner()
+            PF->>P: deploy proxy and calls distribute
+            P->>D: delegatecall distribute()
+            P-xRT: rescue erc20 token, send to rescue requestor
+        end
+    end
+    deactivate PF
+    deactivate P
+    deactivate D
+    Note over 1,W: Contest ends here
 
--   Pattern 3 - Distribute by signature: Contest created but owner send tx instead of organizer
-
-```mermaid
-sequenceDiagram
-    actor 1 as Owner
-    actor S as Sponsor
-    actor O as Organizer
-    participant PF as ProxyFactory
-    participant P as Proxy
-    participant D as Distributior
-    actor W as Winners
-    1->>PF: setContest()
-    PF-->>P: getProxyAddress()
-    O--xP: send erc20 token
-    S--xP: send erc20 token
-    Note over PF,D: Wait for contest to reach close time
-    O ->> 1: send signature
-    1->>PF: deployProxyAndDsitributeBySignature()
-    PF->>PF: signature validation is OK
-    PF-->>P: distribute()
-    P-->>D: delegatecall distribute()
-    P-xW: distribute erc20 token as prizes
-    Note over W: Contest ends
-```
-
--   Pattern 4 - Rescue tokens: Contest created and ended, but for some reason whitelisted tokens are stuck in the proxy
-
-```mermaid
-sequenceDiagram
-    actor 1 as Owner
-    actor S as Sponsor
-    actor O as Organizer
-    participant PF as ProxyFactory
-    participant P as Proxy
-    participant D as Distributior
-    actor A as Anyone
-    Note over 1,D: Contest ended after proxy deployment and distribution
-    Note over P, D: after the contest expired
-    Note over P, D: Whitelisted tokens are stuck here
-    1->>PF: dsitributeByOwner()
-    PF-->>P: distribute()
-    P-->>D: delegatecall distribute()
-    P-xA: rescue erc20 token
-    Note over A: Rescue ends
 ```
 
 # How to Start
