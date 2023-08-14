@@ -48,15 +48,6 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.label(user3, "user3");
     }
 
-    function testFuzzSetupProxyFactoryIsWhitelisted(address randomAddr) public {
-        // exclude whitelisted tokens
-        vm.assume(randomAddr != address(jpycv1Address));
-        vm.assume(randomAddr != address(jpycv2Address));
-        vm.assume(randomAddr != address(usdcAddress));
-        // check unwhitelisted address
-        assertFalse(proxyFactory.whitelistedTokens(randomAddr));
-    }
-
     function testSetupContractsExist() public {
         // addresses are not zero
         assertTrue(jpycv1Address != address(0));
@@ -64,6 +55,15 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         assertTrue(usdcAddress != address(0));
         assertTrue(address(proxyFactory) != address(0));
         assertTrue(address(distributor) != address(0));
+    }
+
+    function testFuzzSetupNonProxyFactoryIsWhitelisted(address randomAddr) public {
+        // exclude whitelisted tokens
+        vm.assume(randomAddr != address(jpycv1Address));
+        vm.assume(randomAddr != address(jpycv2Address));
+        vm.assume(randomAddr != address(usdcAddress));
+        // check unwhitelisted address
+        assertFalse(proxyFactory.whitelistedTokens(randomAddr));
     }
 
     ////////////////
@@ -347,7 +347,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.stopPrank();
     }
 
-    function testFuzzSucceedsIfAllConditionsMet(uint256 randomNum)
+    function testFuzzSucceedsIfAllConditionsMetWithRandomPercentages(uint256 randomNum)
         public
         setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
     {

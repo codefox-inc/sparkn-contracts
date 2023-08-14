@@ -183,3 +183,39 @@ If the network is Anvil,
     -   if no tokens to send, then revert
 
 ### Fuzzing tests
+
+Fuzz testing is done with inputting random data into the function to check if things are alright. It is the same in this test.
+
+-   `setUp`
+    -   Non Proxy factory is not whitlisted
+    -   Contracts exists
+-   `setContest`
+    -   Owner can set contest for anyone
+    -   Owner can set contest for any close time in range
+    -   Any non owner cannot set contest
+    -   Owner can set contest for any implementation
+    -   Owner can set contest for any id
+-   `modifier`
+    -   `setUpContestForJasonAndSentJpycv2Token`
+    -   `createData`
+    -   `createDataToSendToAdmin`
+-   `deployProxyAndDsitribute`
+    -   any contest id is not set, then revert
+    -   any close time is not reached, then revert
+    -   any implementation is not right, then revert
+    -   any organizer is not right, then revert
+    -   succeeds when all conditions are met with random percentages
+-   `deployProxyAndDistributeByOwner`
+    -   reverts if called by non owner
+    -   reverts if called with wrong contest id
+    -   reverts if called with wrong distributor
+    -   reverts if contest is not expired
+    -   reverts if called with wrong implementation
+    -   succeeds if all condition is met wiht random percentages
+-   `dsitributeByOwner`
+    -   reverts if contest id is not right
+    -   reverts if implementation is not right
+    -   reverts if organizer argument is not right
+    -   reverts if called by non owner
+    -   succeeds if all conditions are met with random percentages
+-
