@@ -140,9 +140,9 @@ sequenceDiagram
         1->>PF: deployProxyAndDsitributeByOwner()
     end
     end
-    PF-->>P: deploy proxy and calls distribute()
+    PF->>P: deploy proxy and calls distribute()
     activate P
-    P-->>D: delegatecall distribute()
+    P->>D: delegatecall distribute()
     P-xW: distribute erc20 token as prizes
     P-->>PF: Proxy address
     PF-->>O: Proxy address
