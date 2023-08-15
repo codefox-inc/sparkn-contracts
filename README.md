@@ -10,7 +10,7 @@ Because of this, we have created **SPARKN**.
 
 # What is SPARKN
 
-The SPARKN protocol is a Web3 project that aims to build a marketplace for anyone who wants to solve their problems or anyone who wants to help solve problems.
+The SPARKN protocol is a Web3 project that aims to build a marketplace for anyone who wants to solve his problems or anyone who wants to help solve problems.
 As the first step, we have created the protocol. We do not set limits. The details of how to use the protocol is up to the users.
 
 ## Scope
@@ -39,7 +39,7 @@ The contracts are supposed to be deployed to any EVM-compatible chains.
 
 There are mainly 3 roles in the protocol. Another role is the owner.
 
--   Organizer: The person who creates the contest and is responsible for distributing the prizes to the winners. We also sometimes call this person an innovator.
+-   Organizer: The person who creates the contest and he is responsible for distributing the prizes to the winners. We also sometimes call this person as "innovator".
 -   Sponsor: the person who is willing to fund the contest. Sponsor can be the same person as the organizer or someone else.
 -   Supporter: the person who is willing to help solve the problem. Winners are selected from the supporters.
 -   Owner: The administrator of the protocol.
@@ -102,7 +102,7 @@ These are known issues or designed by purpose.
 
 ## Notes
 
--   We have designed the protocol by using a lot of immutable variables. So it is supposed that there is no state variable collision in the system. If you find any issue, please report it.
+-   We have designed the protocol by using a lot of immutable variables. So it is supposed that there is no state variable collision in the system. If you find any issue, please report.
 
 ## Sequence Diagram of the Protocol
 
