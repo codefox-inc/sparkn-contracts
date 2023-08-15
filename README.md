@@ -4,14 +4,14 @@ Nowadays information is spread around the world in an incredible speed. However,
 
 We found that there are many problems can be solved by the community in a more innovative and open way if things are done openly and smartly with adequate incentives.
 
-We believe that if more problems can solved, then more value can be created. And if more value can be created, then more people can receive the benefites.
+We believe that if more problems can be solved, then more value can be created. And if more value can be created, then more people can receive the benefites.
 
 Because of this, we have created **SPARKN**.
 
 # What is SPARKN
 
 The SPARKN protocol is a Web3 project that aims to build a marketplace for anyone who wants to solve their problems or anyone who wants to help solve problems.
-As a first step, we have created the protocol. The details of how to use the protocol is up to the users.
+As the first step, we have created the protocol. We do not set limits. The details of how to use the protocol is up to the users.
 
 ## Scope
 
@@ -184,7 +184,7 @@ forge install
 forge test
 ```
 
-run a single test file
+run a single test
 
 ```bash
 forge test --mt <test_function_name>
@@ -193,7 +193,7 @@ forge test --mt <test_function_name>
 run fuzz test
 
 ```bash
-forge test -vvv --match-contract FuzzTestProxyFactory
+forge test --match-contract FuzzTestProxyFactory
 ```
 
 see test coverage
