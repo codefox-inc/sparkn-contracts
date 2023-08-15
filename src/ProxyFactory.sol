@@ -74,8 +74,8 @@ contract ProxyFactory is Ownable, EIP712 {
     /////// Constructor ////////
     ////////////////////////////
     /**
-     * @notice The constructor will set the whitelist tokens. e.g. JPYCv1, JPYCv2, USDC, USDT, DAI
-     * @notice the array is not supposed to be so long
+     * @notice The constructor will set the whitelist tokens. e.g. USDC, JPYCv1, JPYCv2, USDT, DAI
+     * @notice the array is not supposed to be so long because only major tokens will get listed
      * @param _whitelistedTokens The tokens array to get whitelisted
      */
     constructor(address[] memory _whitelistedTokens) EIP712("ProxyFactory", "1") Ownable() {

@@ -60,15 +60,12 @@ contract Distributor {
     // a constant value of 10,000 (basis points)
     uint256 private constant BASIS_POINTS = 10000;
 
-    /* solhint-enable */
-
     event Distributed(address token, address[] winners, uint256[] percentages);
 
     ////////////////////////////
     /////// Constructor ////////
     ////////////////////////////
     /// @dev initiate the contract with factory address and other key addresses, fee rate
-    /* solhint-disable */
     constructor(
         // uint256 version, // for future use
         address factoryAddress,
@@ -177,16 +174,16 @@ contract Distributor {
      * @notice returns all the immutable and constant addresses and values
      * @dev This function is for convenience to check the addresses and values
      */
-    /* solhint-disable */
     function getConstants()
         external
         view
         returns (address _FACTORY_ADDRESS, address _STADIUM_ADDRESS, uint256 _COMMISSION_FEE, uint8 _VERSION)
     {
+        /* solhint-disable */
         _FACTORY_ADDRESS = FACTORY_ADDRESS;
         _STADIUM_ADDRESS = STADIUM_ADDRESS;
         _COMMISSION_FEE = COMMISSION_FEE;
         _VERSION = VERSION;
+        /* solhint-enable */
     }
-    /* solhint-enable */
 }
