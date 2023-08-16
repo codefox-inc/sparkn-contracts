@@ -729,14 +729,14 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         return (digest, sendingData, signature);
     }
 
-    function testIfSignerCanBeRecoveredOrNot() public setUpContestForJasonAndSentJpycv2Token(TEST_SIGNER) {
+    function testIfSignerCanBeRecoveredOrNot() public {
         // vm.stopPrank();
         (bytes32 digest,, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
         // console.log(ECDSA.recover(digest, signature), TEST_SIGNER);
         assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
     }
 
-    function testIfSigner2CanBeRecoveredOrNot() public setUpContestForJasonAndSentJpycv2Token(TEST_SIGNER) {
+    function testIfSigner2CanBeRecoveredOrNot() public {
         // vm.stopPrank();
         (bytes32 digest,, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY2);
         // console.log(ECDSA.recover(digest, signature), TEST_SIGNER);

@@ -141,7 +141,7 @@ If the network is Anvil,
 
 -   `deployProxyAndDistributeBySignature`
 
-    -   "common signature creating function is used"
+    -   created a common signature creating function: `createDataBySignature`
     -   check if signer can be recovered from the signature
     -   check if signer2 can be recovered from the signature
     -   if signature is wrong and recovered address is not right then revert
@@ -152,9 +152,7 @@ If the network is Anvil,
     -   `testIfAllConditionsMetThenSucceeds`: if all conditions are met, then it succeeds
 
 -   `getProxyAddress`
-    -   if salt doesn't exist, then revert
-    -   if salt is not 0, but implementation address is zero, then revert
-    -   if salt is not 0, and implementation address is not zero, then return the proxy address and it is not zero address
+    -   check if the returned proxy address is not zero address
     -   check if the returned calculated proxy addresses matches the real ones.
 
 #### `ProxyTest.t.sol`

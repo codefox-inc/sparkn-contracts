@@ -14,7 +14,7 @@ Because of this, we have created **SPARKN**.
 
 # What is SPARKN
 
-The SPARKN protocol is a Web3 project that aspires to create a marketplace for anyone looking to find solutions to their problems or eager to assist others in solving theirs.
+SPARKN protocol is a Web3 project that aspires to create a marketplace for anyone looking to find solutions to their problems or eager to assist others in solving theirs.
 
 As an initial step, we've developed the protocol without any limitations. The manner in which the protocol is used is entirely at the discretion of the users, allowing them to adapt it to their unique needs and preferences.
 
