@@ -30,9 +30,9 @@ import {Proxy} from "./Proxy.sol";
 
 /**
  * @title ProxyFactory contract
- * @notice This contract is the factory contract which will be used to deploy proxy contracts.
- * @notice It will be used to deploy proxy contracts for every contest in Sparkn.
- * @dev This contract is the main entry point for users to use SPARKN's contracts.
+ * @notice This contract is the main entry point for users to use SPARKN's contracts.
+ * @notice It will be used to deploy proxy contracts for every contest in SPARKN.
+ * @dev This contract is the factory contract which will be used to deploy proxy contracts.
  */
 contract ProxyFactory is Ownable, EIP712 {
     //////////////////////
@@ -170,7 +170,6 @@ contract ProxyFactory is Ownable, EIP712 {
      * @notice deploy proxy contract and distribute prize on behalf of organizer by owner
      * @notice This can only be called after contest is expired
      * @dev the caller must be owner
-     * @dev front run is allowed because it will only help the tx sender
      * @param organizer The organizer of the contest
      * @param contestId The contest id
      * @param implementation The implementation address
