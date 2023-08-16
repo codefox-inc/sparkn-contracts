@@ -56,8 +56,8 @@ contract Distributor {
     uint8 private constant VERSION = 1; // version is 1 for now
     address private immutable FACTORY_ADDRESS;
     address private immutable STADIUM_ADDRESS;
-    uint256 private constant COMMISSION_FEE = 500; // uses basis point 10000 = 100%
-    // a constant value of 10,000 (basis points)
+    uint256 private constant COMMISSION_FEE = 500; // this can be changed in the future
+    // a constant value of 10,000 (basis points) = 100%
     uint256 private constant BASIS_POINTS = 10000;
 
     event Distributed(address token, address[] winners, uint256[] percentages);

@@ -1,17 +1,22 @@
+![SPARKN](SPARKN_ja_en.png)
+
 # Incentive
 
-Nowadays information is spread around the world in an incredible speed. However, in some isolated area the information gap is too substantial to overcome the problems. One of the biggest problems we noticed is neither there are talented people nor incentives to create great ideas in some of these areas.
+Nowadays information is spread around the world in an incredible speed. However, in some isolated area the information gap is too substantial to overcome the problems. One of the biggest challenges we noticed is neither there are talented people nor incentives to create great ideas in some of these areas.
 
 We found that there are many problems can be solved by the community in a more innovative and open way if things are done openly and smartly with adequate incentives.
 
-We believe that if more problems can be solved, then more value can be created. And if more value can be created, then more people can receive the benefites.
+Since its inception, Web3 and blockchain technology have been thriving, thanks in part to their inherent incentive structure. We believe that the underlying philosophy and values of Web3 can be applied more widely to address various issues.
+
+Our belief is that the more problems we can solve using this technology, the more value we can generate. This, in turn, will allow more people to reap the benefits of Web3 and blockchain. Ultimately, this could lead to the widespread adoption of Web3, allowing it to become a mainstream technology
 
 Because of this, we have created **SPARKN**.
 
 # What is SPARKN
 
-The SPARKN protocol is a Web3 project that aims to build a marketplace for anyone who wants to solve his problems or anyone who wants to help solve problems.
-As the first step, we have created the protocol. We do not set limits. The details of how to use the protocol is up to the users.
+The SPARKN protocol is a Web3 project that aspires to create a marketplace for anyone looking to find solutions to their problems or eager to assist others in solving theirs.
+
+As an initial step, we've developed the protocol without any limitations. The manner in which the protocol is used is entirely at the discretion of the users, allowing them to adapt it to their unique needs and preferences.
 
 ## Scope
 
@@ -44,7 +49,7 @@ There are mainly 3 roles in the protocol. Another role is the owner.
 -   Supporter: the person who is willing to help solve the problem. Winners are selected from the supporters.
 -   Owner: The administrator of the protocol.
 
-The graph below is the structure of the contracts' relationship in the protocol.
+The graph below shows the structure of the contracts and their relationships in the protocol.
 
 ![contracts structure](contractsStructure.png)
 
@@ -52,7 +57,7 @@ The graph below is the structure of the contracts' relationship in the protocol.
 
 -   The contracts is created with the philosophy of "supporter first".
 
-If a contest is created and funded, there is no way to refund. All the funds belong to the persons who wants to help solve the problem, we call them "supporters".
+If a contest is created and funded, there is no way to refund. All the funds belong to the persons who wants to help solve the problem, we call them "supporters". And there is a certain assets-locking period of time in which no one except the organizer can call and distribute the funds to the winners.
 
 -   SPARKN protocol consists of both web2 and web3, and the system can be upgraded in the future. Because the structure of the contracts are simple and straightforward, and at the same time, all contests have their own life cycle, it is easy to upgrade the system in the future. Once a contest's life cycle ends, we can decide to introduce new contests with any necessary upgrades from that point on.
 
@@ -62,13 +67,15 @@ This is the main entry point of the protocol.
 
 It has several functions.
 
--   Owner can use it to set new contests.
+-   The owner can use it to set new contests.
 -   The organizer can use it to deploy proxy and distribute prizes to winners.
 -   The organizer can use meta transaction to send signature to someone else to deploy proxy and distribute prizes to winners.
 -   The owner can deploy proxy and distribute prizes to winners if organizer did not call the function in time.
 -   The owner can distribute the tokens stuck in the proxy after its depployment.
 -   Anyone can call `getProxyAddress()` to get the address of the proxy.
 -   It contains a whitelist.
+
+This contract inherits the `Ownable` contract from OpenZeppelin for access control. And it inherits the `EIP712` contract from OpenZeppelin for meta transaction. `_hashTypedDataV4` is used for function `deployProxyAndDistributeBySignature()`.
 
 #### `Distributor.sol`
 
@@ -96,8 +103,9 @@ Tests are in the `test/` folder. More explanations about test cases can be found
 These are known issues or designed by purpose.
 
 -   There is a way to rescue the token stuck in the proxy contract after the deployment and distribution of prizes only when the token is whitelisted. If the token is not whitelisted, and then if someone sent the token by mistake, the token will be stuck there forever.
+-   Proxy contracts are designed to be deployed and distribute the prizes to winners simultaneously. Before the deployment, sponsors are supposed to send the whitelisted ERC20 token to the anticipated/calculated proxy contract address. The proxy address can be calculated by the function `getProxyAddress()`.
 -   Proxy contracts are supposed to be disposed after the contest is over. If there is a need to upgrade the protocol, we will just create a new implementation contract and deploy proxies with the new implementation contract. And so is the factory contract.
--   Owner is in charge of some of the key functions of the protocol. Owner's centralization risk is not an issue at this moment.
+-   Owner is in charge of some of the key functions of the protocol. Owner's centralization risk is not an issue to be considered this time.
 -   We may build a reputation system in the futue to handle the issue of the system being maliciously used, e.g., sybil attack.
 
 ## Notes
