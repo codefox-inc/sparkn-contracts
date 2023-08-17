@@ -81,9 +81,9 @@ contract DistributionTest is StdCheats, Test {
         // revert
         vm.startPrank(organizer);
         vm.expectRevert(Distributor.Distributor__OnlyFactoryAddressIsAllowed.selector);
-        distributor.distribute(address(0), new address[](0), new uint256[](0));
+        distributor.distribute(address(0), new address[](0), new uint256[](0), "");
         vm.expectRevert(Distributor.Distributor__OnlyFactoryAddressIsAllowed.selector);
-        distributor.distribute(address(0), new address[](0), new uint256[](0));
+        distributor.distribute(address(0), new address[](0), new uint256[](0), "");
         vm.stopPrank();
     }
 }

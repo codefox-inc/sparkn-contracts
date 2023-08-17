@@ -149,7 +149,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         uint256[] memory percentages_ = new uint256[](2);
         percentages_[0] = user1Percentage;
         percentages_[1] = 9500 - user1Percentage;
-        data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_);
+        data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_, "");
     }
 
     function createDataToSendToAdmin() public view returns (bytes memory data) {
@@ -159,7 +159,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         winners[0] = stadiumAddress;
         uint256[] memory percentages_ = new uint256[](1);
         percentages_[0] = 9500;
-        data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_);
+        data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_, "");
     }
 
     //////////////////////////////

@@ -67,7 +67,7 @@ contract ProxyTest is StdCheats, HelperContract {
         winners[0] = user1;
         uint256[] memory percentages_ = new uint256[](1);
         percentages_[0] = 9500;
-        data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_);
+        data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_, "");
     }
 
     //////////////////////
@@ -100,6 +100,7 @@ contract ProxyTest is StdCheats, HelperContract {
         public
         setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
     {
+        bytes memory emptyBytes = abi.encodePacked("");
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
@@ -122,7 +123,7 @@ contract ProxyTest is StdCheats, HelperContract {
         // random user wants to call distribute function
         vm.startPrank(user1);
         vm.expectRevert(Distributor.Distributor__OnlyFactoryAddressIsAllowed.selector);
-        proxyWithDistributorLogic.distribute(jpycv2Address, winners, percentages_);
+        proxyWithDistributorLogic.distribute(jpycv2Address, winners, percentages_, emptyBytes);
         vm.stopPrank();
     }
 
@@ -153,7 +154,7 @@ contract ProxyTest is StdCheats, HelperContract {
         // factory wants to call distribute function but with address zero
         vm.startPrank(address(proxyFactory));
         vm.expectRevert(Distributor.Distributor__NoZeroAddress.selector);
-        proxyWithDistributorLogic.distribute(address(0), winners, percentages_);
+        proxyWithDistributorLogic.distribute(address(0), winners, percentages_, "");
         vm.stopPrank();
     }
 
@@ -183,7 +184,7 @@ contract ProxyTest is StdCheats, HelperContract {
         // if token address is not whitelisted then revert
         vm.startPrank(address(proxyFactory));
         vm.expectRevert(Distributor.Distributor__InvalidTokenAddress.selector);
-        proxyWithDistributorLogic.distribute(usdtAddress, winners, percentages_);
+        proxyWithDistributorLogic.distribute(usdtAddress, winners, percentages_, "");
         vm.stopPrank();
     }
 
@@ -214,7 +215,7 @@ contract ProxyTest is StdCheats, HelperContract {
         // if arguments length is not equal then revert
         vm.startPrank(address(proxyFactory));
         vm.expectRevert(Distributor.Distributor__MismatchedArrays.selector);
-        proxyWithDistributorLogic.distribute(usdcAddress, winners, percentages_);
+        proxyWithDistributorLogic.distribute(usdcAddress, winners, percentages_, "");
         vm.stopPrank();
     }
 
@@ -243,7 +244,7 @@ contract ProxyTest is StdCheats, HelperContract {
         // if arguments length is not equal then revert
         vm.startPrank(address(proxyFactory));
         vm.expectRevert(Distributor.Distributor__MismatchedArrays.selector);
-        proxyWithDistributorLogic.distribute(usdcAddress, winners, percentages_);
+        proxyWithDistributorLogic.distribute(usdcAddress, winners, percentages_, "");
         vm.stopPrank();
     }
 
@@ -275,7 +276,7 @@ contract ProxyTest is StdCheats, HelperContract {
         // if arguments length is not equal then revert
         vm.startPrank(address(proxyFactory));
         vm.expectRevert(Distributor.Distributor__MismatchedPercentages.selector);
-        proxyWithDistributorLogic.distribute(usdcAddress, winners, percentages_);
+        proxyWithDistributorLogic.distribute(usdcAddress, winners, percentages_, "");
         vm.stopPrank();
     }
 
@@ -311,7 +312,7 @@ contract ProxyTest is StdCheats, HelperContract {
 
         // If all conditions met then call should succeed
         vm.startPrank(address(proxyFactory));
-        proxyWithDistributorLogic.distribute(usdcAddress, winners, percentages_);
+        proxyWithDistributorLogic.distribute(usdcAddress, winners, percentages_, "");
         vm.stopPrank();
 
         // after this, token should be distributed correctly as expected
@@ -354,8 +355,8 @@ contract ProxyTest is StdCheats, HelperContract {
         // If all conditions met then call should succeed
         vm.startPrank(address(proxyFactory));
         vm.expectEmit(true, false, false, false);
-        emit Distributed(jpycv1Address, winners, percentages_);
-        proxyWithDistributorLogic.distribute(jpycv1Address, winners, percentages_);
+        emit Distributed(jpycv1Address, winners, percentages_, "");
+        proxyWithDistributorLogic.distribute(jpycv1Address, winners, percentages_, "");
         vm.stopPrank();
 
         // after this, token should be distributed correctly as expected
@@ -394,7 +395,7 @@ contract ProxyTest is StdCheats, HelperContract {
         // If all conditions met then call should succeed
         vm.startPrank(address(proxyFactory));
         vm.expectRevert(Distributor.Distributor__NoTokenToDistribute.selector);
-        proxyWithDistributorLogic.distribute(jpycv1Address, winners, percentages_);
+        proxyWithDistributorLogic.distribute(jpycv1Address, winners, percentages_, "");
         vm.stopPrank();
     }
 }

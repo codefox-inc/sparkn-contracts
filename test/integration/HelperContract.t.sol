@@ -64,7 +64,7 @@ abstract contract HelperContract is Test {
         address indexed organizer, bytes32 indexed contestId, uint256 closeTime, address indexed implementation
     );
     // event in Distributor
-    event Distributed(address token, address[] winners, uint256[] percentages);
+    event Distributed(address token, address[] winners, uint256[] percentages, bytes data);
 
     constructor() {
         DeployContracts deployContracts = new DeployContracts();
