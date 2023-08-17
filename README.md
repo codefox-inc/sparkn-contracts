@@ -114,7 +114,7 @@ These are known issues or designed by purpose.
 
 ## Sequence Diagram of the Protocol
 
-This sequence diagram shows how the protocol works considering the process of the contest with the actors in the protocol.
+This sequence diagram shows how the protocol works considering the process of the contest with the roles in the protocol.
 
 ```mermaid
 sequenceDiagram

@@ -60,7 +60,8 @@ contract Distributor {
     // a constant value of 10,000 (basis points) = 100%
     uint256 private constant BASIS_POINTS = 10000;
 
-    event Distributed(address token, address[] winners, uint256[] percentages);
+    // data is for logging purpose
+    event Distributed(address token, address[] winners, uint256[] percentages, bytes data);
 
     ////////////////////////////
     /////// Constructor ////////
@@ -88,11 +89,13 @@ contract Distributor {
      * @param winners The addresses array of winners
      * @param percentages The percentages array of winners
      */
-    function distribute(address token, address[] memory winners, uint256[] memory percentages) external {
+    function distribute(address token, address[] memory winners, uint256[] memory percentages, bytes memory data)
+        external
+    {
         if (msg.sender != FACTORY_ADDRESS) {
             revert Distributor__OnlyFactoryAddressIsAllowed();
         }
-        _distribute(token, winners, percentages);
+        _distribute(token, winners, percentages, data);
     }
 
     ////////////////////////////////////////////
@@ -108,8 +111,11 @@ contract Distributor {
      * @param token The token address
      * @param winners The addresses of winners
      * @param percentages The percentages of winners
+     * @param data The data to be logged. It is supposed to be used for creatign log between winners and proposals.
      */
-    function _distribute(address token, address[] memory winners, uint256[] memory percentages) internal {
+    function _distribute(address token, address[] memory winners, uint256[] memory percentages, bytes memory data)
+        internal
+    {
         // token address input check
         if (token == address(0)) revert Distributor__NoZeroAddress();
         if (!_isWhiteListed(token)) {
@@ -146,7 +152,7 @@ contract Distributor {
 
         // send commission fee as well as all the remaining tokens to STADIUM_ADDRESS to avoid dust remaining
         _commissionTransfer(erc20);
-        emit Distributed(token, winners, percentages);
+        emit Distributed(token, winners, percentages, data);
     }
 
     /**
