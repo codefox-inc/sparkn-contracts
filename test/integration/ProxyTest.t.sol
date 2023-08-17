@@ -100,7 +100,6 @@ contract ProxyTest is StdCheats, HelperContract {
         public
         setUpContestForNameAndSentAmountToken("James", jpycv2Address, 10000 ether)
     {
-        bytes memory emptyBytes = abi.encodePacked("");
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
@@ -123,7 +122,7 @@ contract ProxyTest is StdCheats, HelperContract {
         // random user wants to call distribute function
         vm.startPrank(user1);
         vm.expectRevert(Distributor.Distributor__OnlyFactoryAddressIsAllowed.selector);
-        proxyWithDistributorLogic.distribute(jpycv2Address, winners, percentages_, emptyBytes);
+        proxyWithDistributorLogic.distribute(jpycv2Address, winners, percentages_, "");
         vm.stopPrank();
     }
 
