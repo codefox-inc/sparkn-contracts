@@ -450,7 +450,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
     }
 
     /////////////////////////
-    /// dsitributeByOwner ///
+    /// distributeByOwner ///
     /////////////////////////
 
     function testRevertsIfProxyIsZeroDistributeByOwner() public setUpContestForJasonAndSentJpycv2Token(organizer) {
@@ -475,7 +475,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(16 days);
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressCannotBeZero.selector);
-        proxyFactory.dsitributeByOwner(address(0), organizer, randomId_, address(distributor), dataToSendToAdmin);
+        proxyFactory.distributeByOwner(address(0), organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -507,7 +507,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(16 days);
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.dsitributeByOwner(proxyAddress, organizer, wrongId_, address(distributor), dataToSendToAdmin);
+        proxyFactory.distributeByOwner(proxyAddress, organizer, wrongId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -536,7 +536,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(16 days);
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.dsitributeByOwner(proxyAddress, organizer, randomId_, usdcAddress, dataToSendToAdmin);
+        proxyFactory.distributeByOwner(proxyAddress, organizer, randomId_, usdcAddress, dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -565,7 +565,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(16 days);
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.dsitributeByOwner(proxyAddress, user1, randomId_, address(distributor), dataToSendToAdmin);
+        proxyFactory.distributeByOwner(proxyAddress, user1, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -594,7 +594,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(15 days);
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotExpired.selector);
-        proxyFactory.dsitributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        proxyFactory.distributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -626,14 +626,14 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
 
         // 16 days passed
         vm.warp(16 days);
-        // adming calls dsitributeByOwner but it will fail
+        // adming calls distributeByOwner but it will fail
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__DelegateCallFailed.selector);
-        proxyFactory.dsitributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        proxyFactory.distributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
 
-    function testRevertsIfCalledByNonOwnerDsitributeByOwner()
+    function testRevertsIfCalledByNonOwnerdistributeByOwner()
         public
         setUpContestForJasonAndSentJpycv2Token(organizer)
     {
@@ -658,7 +658,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(16 days);
         vm.startPrank(user1);
         vm.expectRevert("Ownable: caller is not the owner");
-        proxyFactory.dsitributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        proxyFactory.distributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -693,7 +693,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
 
         bytes memory dataToSendToAdmin = createDataToSendToAdmin();
         vm.startPrank(factoryAdmin);
-        proxyFactory.dsitributeByOwner(
+        proxyFactory.distributeByOwner(
             calculatedProxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin
         );
         vm.stopPrank();

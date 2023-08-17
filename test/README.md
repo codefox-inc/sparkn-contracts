@@ -127,7 +127,7 @@ If the network is Anvil,
         -   it reverts if called with wrong data
         -   `testSucceedsIfAllConditionsMet`: if all conditions met, then deploy the proxy and distribute the tokens correctly
 
--   `dsitributeByOwner`
+-   `distributeByOwner`
 
     -   "after the contest is set and then tokens has been sent to the proxy address. The organizer deployed and distributed the tokens to the winners. we call this function."
         -   it reverts if proxy address is zero address
@@ -210,7 +210,7 @@ Fuzz testing is done with inputting random data into the function to check if th
     -   reverts if contest is not expired
     -   reverts if called with wrong implementation
     -   succeeds if all condition is met wiht random percentages
--   `dsitributeByOwner`
+-   `distributeByOwner`
     -   reverts if contest id is not right
     -   reverts if implementation is not right
     -   reverts if organizer argument is not right

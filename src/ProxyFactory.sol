@@ -202,7 +202,7 @@ contract ProxyFactory is Ownable, EIP712 {
      * @param implementation The implementation address
      * @param data The prize distribution calling data
      */
-    function dsitributeByOwner(
+    function distributeByOwner(
         address proxy,
         address organizer,
         bytes32 contestId,
