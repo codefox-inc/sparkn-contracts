@@ -2,11 +2,11 @@
 
 # Incentive
 
-Nowadays information is spread around the world in an incredible speed. However, in some isolated area the information gap is too substantial to overcome the problems. One of the biggest challenges we noticed is neither there are talented people nor incentives to create great ideas in some of these areas.
+Nowadays information is spread around the world in an incredible speed. However, in some isolated areas the information gaps are too substantial to overcome the challenges. One of the biggest challenges we noticed so far is: neither there are talented people nor incentives to create great ideas in some of these areas.
 
 We found that there are many problems can be solved by the community in a more innovative and open way if things are done openly and smartly with adequate incentives.
 
-Since its inception, Web3 and blockchain technology have been thriving, thanks in part to their inherent incentive structure. We believe that the underlying philosophy and values of Web3 can be applied more widely to address various issues.
+Since its inception, Web3, or we can all it "blockchain industry", has been thriving, thanks in part to its inherent incentive structure. We believe that the underlying philosophy and values of Web3 can be applied more widely to address various problems.
 
 Our belief is that the more problems we can solve using this technology, the more value we can generate. This, in turn, will allow more people to reap the benefits of Web3 and blockchain. Ultimately, this could lead to the widespread adoption of Web3, allowing it to become a mainstream technology
 
@@ -44,8 +44,8 @@ The contracts are supposed to be deployed to any EVM-compatible chains.
 
 There are mainly 3 roles in the protocol. Another role is the owner.
 
--   Organizer: The person who creates the contest and he is responsible for distributing the prizes to the winners. We also sometimes call this person as "innovator".
--   Sponsor: the person who is willing to fund the contest. Sponsor can be the same person as the organizer or someone else.
+-   Organizer: The person who creates the contest and he is responsible for distributing the prizes to the winners. We also sometimes call this role "innovator".
+-   Sponsor: the person who is willing to fund the contest. Sponsor can be anyone include the organizer.
 -   Supporter: the person who is willing to help solve the problem. Winners are selected from the supporters.
 -   Owner: The administrator of the protocol.
 
@@ -59,7 +59,7 @@ The graph below shows the structure of the contracts and their relationships in 
 
 If a contest is created and funded, there is no way to refund. All the funds belong to the persons who wants to help solve the problem, we call them "supporters". And there is a certain assets-locking period of time in which no one except the organizer can call and distribute the funds to the winners.
 
--   SPARKN protocol consists of both web2 and web3, and the system can be upgraded in the future. Because the structure of the contracts are simple and straightforward, and at the same time, all contests have their own life cycle, it is easy to upgrade the system in the future. Once a contest's life cycle ends, we can decide to introduce new contests with any necessary upgrades from that point on.
+-   SPARKN protocol consists of both web2 and Web3, and the system can be upgraded in the future. Because the structure of the contracts are simple and straightforward, and at the same time, all contests have their own life cycle, it is easy to upgrade the system in the future. Once a contest's life cycle ends, we can decide to introduce new contests with any necessary upgrades from that point on.
 
 #### `ProxyFactory.sol`
 
@@ -71,8 +71,8 @@ It has several functions.
 -   The organizer can use it to deploy proxy and distribute prizes to winners.
 -   The organizer can use meta transaction to send signature to someone else to deploy proxy and distribute prizes to winners.
 -   The owner can deploy proxy and distribute prizes to winners if organizer did not call the function in time.
--   The owner can distribute the tokens stuck in the proxy after its depployment.
--   Anyone can call `getProxyAddress()` to get the address of the proxy.
+-   The owner can distribute the tokens stuck in the proxy after the proxy's expiration.
+-   Anyone can call `getProxyAddress()` to get the address of the proxy even before its deployment.
 -   It contains a whitelist.
 
 This contract inherits the `Ownable` contract from OpenZeppelin for access control. And it inherits the `EIP712` contract from OpenZeppelin for meta transaction. `_hashTypedDataV4` is used for function `deployProxyAndDistributeBySignature()`.
@@ -111,6 +111,7 @@ These are known issues or designed by purpose.
 ## Notes
 
 -   We have designed the protocol by using a lot of immutable variables. So it is supposed that there is no state variable collision in the system. If you find any issue, please report.
+-   The reason we chosse to use the proxy and implementation pattern is because this can reduce a lot of gas with only deploying the proxy contract with minimal size for each contest.
 
 ## Sequence Diagram of the Protocol
 
