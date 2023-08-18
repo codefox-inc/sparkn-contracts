@@ -269,7 +269,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(14 days);
         vm.startPrank(organizer);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
     }
 
@@ -281,7 +281,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         // deploy proxy and distribute
         vm.startPrank(organizer);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotClosed.selector);
-        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
     }
 
@@ -297,7 +297,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(9 days);
         vm.startPrank(organizer);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.deployProxyAndDsitribute(randomId_, usdcAddress, data);
+        proxyFactory.deployProxyAndDistribute(randomId_, usdcAddress, data);
         vm.stopPrank();
     }
 
@@ -309,7 +309,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(9 days);
         vm.startPrank(user1);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
     }
 
@@ -328,7 +328,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(9 days);
         vm.startPrank(organizer);
         vm.expectRevert(ProxyFactory.ProxyFactory__DelegateCallFailed.selector);
-        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
     }
 
@@ -345,7 +345,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
 
         vm.warp(9 days); // 9 days later
         vm.startPrank(organizer);
-        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         // after
@@ -461,7 +461,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         // owner deploy and distribute
         vm.warp(9 days);
         vm.startPrank(organizer);
-        address proxyAddress = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        address proxyAddress = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         // sponsor send token to proxy by mistake
@@ -490,7 +490,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         // owner deploy and distribute
         vm.warp(9 days);
         vm.startPrank(organizer);
-        address proxyAddress = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        address proxyAddress = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         // sponsor send token to proxy by mistake
@@ -522,7 +522,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         // owner deploy and distribute
         vm.warp(9 days);
         vm.startPrank(organizer);
-        address proxyAddress = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        address proxyAddress = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         // sponsor send token to proxy by mistake
@@ -551,7 +551,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         // owner deploy and distribute
         vm.warp(9 days);
         vm.startPrank(organizer);
-        address proxyAddress = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        address proxyAddress = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         // sponsor send token to proxy by mistake
@@ -580,7 +580,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         // owner deploy and distribute
         vm.warp(9 days);
         vm.startPrank(organizer);
-        address proxyAddress = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        address proxyAddress = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         // sponsor send token to proxy by mistake

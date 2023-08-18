@@ -141,17 +141,17 @@ sequenceDiagram
     rect rgba(0, 255, 0, 0.1)
         alt Pattern 1: Distribute by organizer
         Note over O: When organizer is active to end the contest
-            O->>PF: deployProxyAndDsitribute()
+            O->>PF: deployProxyAndDistribute()
     else Pattern 2: Distribute by signature
     Note over O: When organizer is active and wants to use meta tx
         O ->> 1: send signature
-        1->>PF: deployProxyAndDsitributeBySignature()
+        1->>PF: deployProxyAndDistributeBySignature()
         note over PF: signature validation is OK
     else Pattern 3: Distribute by owner
     Note over 1,W: Contest Expiration Phase
         Note over O: When organizer is not active
         Note over PF, D: And if contest is expired
-        1->>PF: deployProxyAndDsitributeByOwner()
+        1->>PF: deployProxyAndDistributeByOwner()
     end
     end
     PF->>P: deploy proxy and calls distribute()
@@ -167,7 +167,7 @@ sequenceDiagram
             Note over 1,W: Contest Expiration Phase
             Note over P: Proxy is deployed and token is distributed
             Note over P: If whitelisted tokens are sent by mistake
-            1->>PF: dsitributeByOwner()
+            1->>PF: distributeByOwner()
             PF->>P: deploy proxy and calls distribute
             P->>D: delegatecall distribute()
             P-xRT: rescue erc20 token, send to rescue requestor

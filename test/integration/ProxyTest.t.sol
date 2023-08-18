@@ -80,7 +80,7 @@ contract ProxyTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
-        deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        deployedProxy = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
@@ -103,7 +103,7 @@ contract ProxyTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
-        deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        deployedProxy = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
@@ -134,7 +134,7 @@ contract ProxyTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
-        deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        deployedProxy = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
@@ -164,7 +164,7 @@ contract ProxyTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
-        deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        deployedProxy = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
@@ -194,7 +194,7 @@ contract ProxyTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
-        deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        deployedProxy = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
@@ -225,7 +225,7 @@ contract ProxyTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
-        deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        deployedProxy = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
@@ -254,7 +254,7 @@ contract ProxyTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
-        deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        deployedProxy = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
@@ -291,7 +291,7 @@ contract ProxyTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
-        deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        deployedProxy = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
@@ -332,7 +332,7 @@ contract ProxyTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
-        deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        deployedProxy = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));
@@ -376,7 +376,7 @@ contract ProxyTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("James", "001"));
         bytes memory data = createDataToDistributeJpycv2();
         vm.startPrank(organizer);
-        deployedProxy = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        deployedProxy = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         proxyWithDistributorLogic = Distributor(address(deployedProxy));

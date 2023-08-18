@@ -178,7 +178,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.warp(14 days);
         vm.startPrank(organizer);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.deployProxyAndDsitribute(randomId, address(distributor), data);
+        proxyFactory.deployProxyAndDistribute(randomId, address(distributor), data);
         vm.stopPrank();
     }
 
@@ -206,7 +206,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // deploy proxy and distribute but expect revertting
         vm.startPrank(organizer);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotClosed.selector);
-        proxyFactory.deployProxyAndDsitribute(someId, address(distributor), data);
+        proxyFactory.deployProxyAndDistribute(someId, address(distributor), data);
         vm.stopPrank();
     }
 
@@ -226,7 +226,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // deploy proxy and distribute but expect revertting
         vm.startPrank(organizer);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.deployProxyAndDsitribute(someId, address(randomImple), data);
+        proxyFactory.deployProxyAndDistribute(someId, address(randomImple), data);
         vm.stopPrank();
     }
 
@@ -242,7 +242,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.warp(9 days);
         vm.startPrank(randomUsr);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
     }
 
@@ -261,7 +261,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         bytes memory data = createData(randomNum_);
         vm.warp(2 days);
         vm.startPrank(organizer);
-        proxyFactory.deployProxyAndDsitribute(someId, address(distributor), data);
+        proxyFactory.deployProxyAndDistribute(someId, address(distributor), data);
         vm.stopPrank();
 
         // after
@@ -385,7 +385,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
         vm.warp(8.01 days);
         vm.startPrank(organizer);
-        address proxyAddress = proxyFactory.deployProxyAndDsitribute(someId, address(distributor), data);
+        address proxyAddress = proxyFactory.deployProxyAndDistribute(someId, address(distributor), data);
         vm.stopPrank();
 
         // sponsor send token to proxy by mistake
@@ -415,7 +415,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // owner deploy and distribute
         vm.warp(9 days);
         vm.startPrank(organizer);
-        address proxyAddress = proxyFactory.deployProxyAndDsitribute(SOMEID, address(distributor), data);
+        address proxyAddress = proxyFactory.deployProxyAndDistribute(SOMEID, address(distributor), data);
         vm.stopPrank();
 
         // sponsor send token to proxy by mistake
@@ -447,7 +447,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // owner deploy and distribute
         vm.warp(9 days);
         vm.startPrank(organizer);
-        address proxyAddress = proxyFactory.deployProxyAndDsitribute(SOMEID, address(distributor), data);
+        address proxyAddress = proxyFactory.deployProxyAndDistribute(SOMEID, address(distributor), data);
         vm.stopPrank();
 
         // sponsor send token to proxy by mistake
@@ -477,7 +477,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // owner deploy and distribute
         vm.warp(2 days);
         vm.startPrank(organizer);
-        address proxyAddress = proxyFactory.deployProxyAndDsitribute(randomId_, address(distributor), data);
+        address proxyAddress = proxyFactory.deployProxyAndDistribute(randomId_, address(distributor), data);
         vm.stopPrank();
 
         // sponsor send token to proxy by mistake

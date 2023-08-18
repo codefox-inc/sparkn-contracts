@@ -124,7 +124,7 @@ contract ProxyFactory is Ownable, EIP712 {
      * @param data The prize distribution data
      * @return The proxy address
      */
-    function deployProxyAndDsitribute(bytes32 contestId, address implementation, bytes calldata data)
+    function deployProxyAndDistribute(bytes32 contestId, address implementation, bytes calldata data)
         public
         returns (address)
     {

@@ -100,7 +100,7 @@ If the network is Anvil,
 
     -   `createData`, `createDataToSendToAdmin`, `setUpContestForJasonAndSentJpycv2Token`
 
--   `deployProxyAndDsitribute`
+-   `deployProxyAndDistribute`
 
     -   "after the contest is set and then tokens has been sent to the proxy address"
     -   call it with wrong contest id, then revert
@@ -197,7 +197,7 @@ Fuzz testing is done with inputting random data into the function to check if th
     -   `setUpContestForJasonAndSentJpycv2Token`
     -   `createData`
     -   `createDataToSendToAdmin`
--   `deployProxyAndDsitribute`
+-   `deployProxyAndDistribute`
     -   any contest id is not set, then revert
     -   any close time is not reached, then revert
     -   any implementation is not right, then revert
