@@ -112,7 +112,7 @@ These are known issues or designed by purpose.
 
 -   We have designed the protocol by using a lot of immutable variables. So it is supposed that there is no state variable collision in the system. If you find any issue, please report.
 -   The reason we chosse to use the proxy and implementation pattern is because this can reduce a lot of gas with only deploying the proxy contract with minimal size for each contest.
--   Unfortunately, the curreny condition of Web3's scalibility is not able to support total on-chain application. That is why we created a more versatile version of it using a hybrid solution of web2 and Web3. We will try to make it more and more decentralized after we onborad more users and the condition of Web3 improves.
+-   Unfortunately, the current condition of Web3's scalibility is not able to support total on-chain application. That is why we created a more versatile version of it using a hybrid solution of web2 and Web3. We will try to make it more and more decentralized after we onborad more users and the condition of Web3 improves.
 
 ## Sequence Diagram of the Protocol
 
