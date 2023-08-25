@@ -41,7 +41,6 @@ contract Distributor {
     /////// Error ////////
     //////////////////////
 
-    error Distributor__InvalidCommissionFee();
     error Distributor__NoZeroAddress();
     error Distributor__OnlyFactoryAddressIsAllowed();
     error Distributor__InvalidTokenAddress();
