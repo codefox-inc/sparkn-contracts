@@ -8,6 +8,7 @@ import {MockERC20} from "../test/mock/MockERC20.sol";
 // This contract script is to deploy the contracts on different networks and can be used for testing purposes
 contract HelperConfig is Script {
     address public tokenMinter = makeAddr("tokenMinter");
+    // address public minter = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
     address public minter = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
 
     struct NetworkConfig {
@@ -27,20 +28,78 @@ contract HelperConfig is Script {
 
     constructor() {
         if (block.chainid == 11155111) {
-            // activeNetworkConfig = getSepoliaEthereumConfig();
+            activeNetworkConfig = getSepoliaEthereumConfig();
         } else if (block.chainid == 137) {
             activeNetworkConfig = getPolygonConfig();
+        } else if (block.chainid == 43113) {
+            activeNetworkConfig = getAvalancheFujiConfig();
+        } else if (block.chainid == 43114) {
+            activeNetworkConfig = getAvalancheConfig();
         } else {
             activeNetworkConfig = getOrCreateAnvilEthConfig();
         }
     }
 
-    function getSepoliaEthereumConfig() public view returns (NetworkConfig memory) {
+    function getSepoliaEthereumConfig() public returns (NetworkConfig memory) {
         // address[2] memory arr = [makeAddr("weth"), makeAddr("wbtc")];
         // return NetworkConfig({
         // tokensToWhitelist: arr,
         // deployerKey: vm.envUint("PRIVATE_KEY")
         // });
+    }
+
+    // deploy mock tokens and setup things on avalanche fuji for development
+    function getAvalancheFujiConfig() public returns (NetworkConfig memory) {
+        if (activeNetworkConfig.jpycv2Address != address(0)) {
+            return activeNetworkConfig;
+        }
+
+        // deploy contracts
+        vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
+
+        MockERC20 jpycV2Mock = new MockERC20(
+            "JPY Coin V2",
+            "JPYCv2"
+        );
+        MockERC20 usdcMock = new MockERC20(
+            "USD Coin",
+            "USDC"
+        );
+        MockERC20 usdtMock = new MockERC20(
+            "Tether",
+            "USDT"
+        );
+        // console.log("msgsender: ", msg.sender);
+
+        vm.stopBroadcast();
+        // console.log("msgsender: ", msg.sender);
+        // console.log('msgsender: ', msg.sender);
+        // console.log('tokenMinter: ', tokenMinter);
+        // console.log('realMinter: ', jpycV2Mock.owner());
+        // vm.startPrank(minter);
+        // jpycV2Mock.transferOwnership(tokenMinter);
+        // jpycv1Mock.transferOwnership(tokenMinter);
+        // usdcMock.transferOwnership(tokenMinter);
+        // vm.stopPrank();
+
+        return NetworkConfig({
+            jpycv1Address: address(0),
+            jpycv2Address: address(jpycV2Mock),
+            usdcAddress: address(usdcMock),
+            usdtAddress: address(usdtMock),
+            deployerKey: vm.envUint("PRIVATE_KEY")
+        });
+    }
+
+    function getAvalancheConfig() public view returns (NetworkConfig memory) {
+        // real addresses
+        return NetworkConfig({
+            jpycv1Address: address(0),
+            jpycv2Address: 0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB,
+            usdcAddress: 0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E,
+            usdtAddress: 0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7,
+            deployerKey: vm.envUint("PRIVATE_KEY")
+        });
     }
 
     function getPolygonConfig() public view returns (NetworkConfig memory) {
@@ -61,7 +120,7 @@ contract HelperConfig is Script {
     }
 
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
-        if (activeNetworkConfig.jpycv1Address != address(0)) {
+        if (activeNetworkConfig.jpycv2Address != address(0)) {
             return activeNetworkConfig;
         }
 
