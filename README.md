@@ -215,7 +215,7 @@ forge coverage
 3. Deploy contracts
 
 ```bash
-forge deploy --network <network>
+make deploy ARGS="--network <name>"
 ```
 
 or deploy to local network
