@@ -34,8 +34,8 @@ abstract contract HelperContract is Test {
     HelperConfig public config;
 
     // users
-    address public stadiumAddress = makeAddr("stadium");
-    address public factoryAdmin = makeAddr("factoryAdmin");
+    address public stadiumAddress = 0x1FBcd7D20155274DFD796343149D0FCA41338F14;
+    address public factoryAdmin = 0xbe5b0d1386BE331080fbb2C8c517BAA148497D97;
     address public tokenMinter = makeAddr("tokenMinter");
     address public organizer = address(11);
     address public sponsor = address(12);
