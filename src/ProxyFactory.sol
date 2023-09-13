@@ -188,8 +188,6 @@ contract ProxyFactory is Ownable, EIP712 {
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         if (saltToCloseTime[salt] + EXPIRATION_TIME > block.timestamp) revert ProxyFactory__ContestIsNotExpired();
-        // require(saltToCloseTime[salt] == 0, "Contest is not registered");
-        // require(saltToCloseTime[salt] < block.timestamp + EXPIRATION_TIME, "Contest is not expired");
         address proxy = _deployProxy(organizer, contestId, implementation);
         _distribute(proxy, data);
         return proxy;
