@@ -32,8 +32,8 @@ contract DeployContracts is Script {
                 finalTokensToWhitelist.push(tokensToWhitelist[i]);
             }
         }
-        console.log("finalTokensToWhitelist length:", finalTokensToWhitelist.length);
 
+        // console.log("finalTokensToWhitelist length:", finalTokensToWhitelist.length);
         // console.log("tokensToWhitelist: %s", tokensToWhitelist[0]);
         // console.log("tokensToWhitelist: %s",  tokensToWhitelist[1]);
         // console.log("tokensToWhitelist: %s", tokensToWhitelist[2]);
