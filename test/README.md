@@ -72,6 +72,7 @@ Tests assumes they only exist by themselves are conducted here.
 ### Integration tests
 
 Tests assumes they exist with other contracts are conducted here.
+`HelperContract.t.sol` is a contract to help set up the test environment for integration tests. `State variables` including contract instances, etc and `events`, `constructor` are written there.
 
 #### `ProxyFactoryTest.t.sol`
 
@@ -117,12 +118,6 @@ Calling functions to `proxyFactory` contract itself or through it to interact wi
   - call it with wrong data, then revert
   - `testSucceedsWhenConditionsAreMet`: right arguments, then deploy the proxy and distribute the tokens correctly
 
-- `deployProxyAndDistributeBySignature`
-
-  - if data is wrong, then revert
-  - if salt is not right, then revert
-    - msg.sender is not the owner
-
 - `deployProxyAndDistributeByOwner`
 
   - "after the contest is set and then tokens has been sent to the proxy address."
@@ -148,19 +143,32 @@ Calling functions to `proxyFactory` contract itself or through it to interact wi
 
 - `deployProxyAndDistributeBySignature`
 
-  - created a common signature creating function: `createDataBySignature`
+  - created a common signature creating function: `createSignatureByASigner`
   - check if signer can be recovered from the signature
   - check if signer2 can be recovered from the signature
   - if signature is wrong and recovered address is not right then revert
   - if signature is right but contest is not registered then revert
+  - if digest is wrong then revert
   - if signature is right but contest is not expired then revert
   - if signature is right but implementation is wrong then revert
-  - if signature is right but organizer is wrong then revert
+  - if signature is right but organizer argument is wrong then revert
   - `testIfAllConditionsMetThenSucceeds`: if all conditions are met, then it succeeds
 
 - `getProxyAddress`
+
   - check if the returned proxy address is not zero address
   - check if the returned calculated proxy addresses matches the real ones.
+
+- `deployProxyAndDistributeBySignature`
+
+  This is for smart contract wallet using EIP1271
+
+  - check if signer can be recovered from the signature
+  - check if signer2 can be recovered from the signature
+  - if signature is wrong and recovered address is not right then revert
+  - if signature is right but contest is not registered then revert
+  - if signature is right but implementation is wrong then revert
+  - if conditions met then succeeds
 
 #### `ProxyTest.t.sol`
 
