@@ -10,8 +10,12 @@ import {ProxyFactory} from "../../src/ProxyFactory.sol";
 import {Proxy} from "../../src/Proxy.sol";
 import {Distributor} from "../../src/Distributor.sol";
 import {HelperContract} from "./HelperContract.t.sol";
+import {ERC1271WalletMock, ERC1271MaliciousMock} from "openzeppelin/mocks/ERC1271WalletMock.sol";
+import {SignatureChecker} from "openzeppelin/utils/cryptography/SignatureChecker.sol";
 
 contract ProxyFactoryTest is StdCheats, HelperContract {
+    using SignatureChecker for address;
+
     function setUp() public {
         // set up balances of each token belongs to each user
         if (block.chainid == 31337) {
@@ -734,6 +738,9 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         (bytes32 digest,, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
         // console.log(ECDSA.recover(digest, signature), TEST_SIGNER);
         assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
+        // adding EIP1271
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
     }
 
     function testIfSigner2CanBeRecoveredOrNot() public {
@@ -741,13 +748,20 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         (bytes32 digest,, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY2);
         // console.log(ECDSA.recover(digest, signature), TEST_SIGNER);
         assertEq(ECDSA.recover(digest, signature), TEST_SIGNER2);
+        // adding EIP1271
+        bool result = TEST_SIGNER2.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
     }
 
     function testIfSignatureIsWrongAndReturnsNonOrganizerThenRevert()
         public
         setUpContestForJasonAndSentJpycv2Token(TEST_SIGNER)
     {
-        (, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY2);
+        (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY2);
+        assertFalse(ECDSA.recover(digest, signature) == TEST_SIGNER);
+
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, false);
 
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
         vm.warp(8.1 days);
@@ -760,10 +774,29 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
 
     function testIfSignatureIsRightButContestIsNotRegisteredThenRevert()
         public
-        setUpContestForJasonAndSentJpycv2Token(TEST_SIGNER)
+        setUpContestForJasonAndSentJpycv2Token(TEST_SIGNER2)
     {
         (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
         assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
+
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
+
+        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+        vm.warp(8.1 days);
+        // expect revert with wrong address erecover
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.deployProxyAndDistributeBySignature(
+            TEST_SIGNER, randomId, address(distributor), signature, sendingData
+        );
+    }
+
+    function testIfDigestIsWrongThenRevert() public setUpContestForJasonAndSentJpycv2Token(TEST_SIGNER) {
+        (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
+        assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
+
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
 
         bytes32 randomId = keccak256(abi.encode("WrongName", "a01"));
         vm.warp(8.1 days);
@@ -781,6 +814,9 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
         assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
 
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
+
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
         vm.warp(7.9 days);
         // expect revert with wrong address erecover
@@ -796,6 +832,9 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
     {
         (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
         assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
+
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
 
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
         vm.warp(8.01 days);
@@ -813,6 +852,9 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
         assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
 
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
+
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
         vm.warp(8.01 days);
         // expect revert with wrong address erecover
@@ -827,6 +869,8 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
 
         (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
         assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
 
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
         vm.warp(8.01 days);
@@ -878,5 +922,200 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
             proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, address(distributor), data);
         vm.stopPrank();
         assertEq(proxyAddress, calculatedProxyAddress);
+    }
+
+    ///////////////////////////////////////////////
+    /// EIP1271 contract signature verification ///
+    ///////////////////////////////////////////////
+    // adding tests for EIP1271 of SmartContractWallet
+
+    function testIfSignerCanBeRecoveredOrNotWithEip1271() public {
+        // vm.stopPrank();
+        (bytes32 digest,, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
+        // console.log(ECDSA.recover(digest, signature), TEST_SIGNER);
+        bool result = address(SmartContractWallet).isValidSignatureNow(digest, signature); // owner of the contract is TEST_SIGNER
+        assertEq(result, true);
+    }
+
+    function testIfSigner2CanBeRecoveredOrNotWithEip1271() public {
+        // vm.stopPrank();
+        (bytes32 digest,, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY2);
+        // console.log(ECDSA.recover(digest, signature), TEST_SIGNER);
+        bool result = address(SmartContractWallet2).isValidSignatureNow(digest, signature); // owner of the contract is TEST_SIGNER2
+        assertEq(result, true);
+    }
+
+    function testIfSignatureIsWrongThenRevertWithEip1271()
+        public
+        setUpContestForJasonAndSentJpycv2Token(address(SmartContractWallet)) // owner of the contract is TEST_SIGNER
+    {
+        // create a wrong signature using the mock wallet's private key
+        (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY2);
+        assertEq(ECDSA.recover(digest, signature), TEST_SIGNER2);
+
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, false);
+
+        // create the random id
+        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+
+        // time elapsed
+        vm.warp(8.01 days);
+        // calling will revert
+        vm.expectRevert(ProxyFactory.ProxyFactory__InvalidSignature.selector);
+        address proxyAddress = proxyFactory.deployProxyAndDistributeBySignature(
+            address(SmartContractWallet), randomId, address(distributor), signature, sendingData
+        );
+
+        // verify if the function executed not successfully
+        assertTrue(proxyAddress == address(0), "Proxy deployment should fail and return 0x0");
+    }
+
+    function testIfDigestIsWrongThenRevertWithEip1271()
+        public
+        setUpContestForJasonAndSentJpycv2Token(address(SmartContractWallet))
+    {
+        // create a wrong signature using the mock wallet's private key
+        (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY2);
+        assertEq(ECDSA.recover(digest, signature), TEST_SIGNER2);
+
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, false);
+
+        // create the random id
+        bytes32 randomId = keccak256(abi.encode("Wrong", "001"));
+
+        // time elapsed
+        vm.warp(8.01 days);
+        // calling will revert
+        vm.expectRevert(ProxyFactory.ProxyFactory__InvalidSignature.selector);
+        address proxyAddress = proxyFactory.deployProxyAndDistributeBySignature(
+            address(SmartContractWallet), randomId, address(distributor), signature, sendingData
+        );
+
+        // verify if the function executed not successfully
+        assertTrue(proxyAddress == address(0), "Proxy deployment should fail and return 0x0");
+    }
+
+    function testIfSignatureIsRightButContestIsNotRegisteredThenRevertWithEip1271()
+        public
+        setUpContestForJasonAndSentJpycv2Token(address(SmartContractWallet2)) // owner of the contract is TEST_SIGNER2
+    {
+        // create a signature using the mock wallet's private key
+        (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
+
+        // not right signer
+        assertTrue(ECDSA.recover(digest, signature) == TEST_SIGNER);
+
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
+
+        // create the random id
+        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+        vm.warp(8.01 days);
+
+        // calling the function
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        address proxyAddress = proxyFactory.deployProxyAndDistributeBySignature(
+            address(SmartContractWallet), randomId, address(distributor), signature, sendingData
+        );
+
+        // verify if the function executed successfully
+        assertTrue(proxyAddress == address(0), "Proxy deployment should not succeed");
+        // Add any other assertions you need to verify the function's behavior
+    }
+
+    function testIfSignatureIsRightButContestIsNotExpiredThenRevertWithEip1271()
+        public
+        setUpContestForJasonAndSentJpycv2Token(address(SmartContractWallet))
+    {
+        // create a signature using the mock wallet's private key
+        (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
+
+        // not right signer
+        assertTrue(ECDSA.recover(digest, signature) == TEST_SIGNER);
+
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
+
+        // create the random id
+        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+
+        // no time warp
+        // vm.warp(8.01 days);
+
+        // calling the function
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotClosed.selector);
+        address proxyAddress = proxyFactory.deployProxyAndDistributeBySignature(
+            address(SmartContractWallet), randomId, address(distributor), signature, sendingData
+        );
+
+        // verify if the function executed successfully
+        assertTrue(proxyAddress == address(0), "Proxy deployment should not succeed");
+        // Add any other assertions you need to verify the function's behavior
+    }
+
+    function testIfSignatureIsRightButImplementationIsWrongThenRevertWithEip1271()
+        public
+        setUpContestForJasonAndSentJpycv2Token(address(SmartContractWallet))
+    {
+        // create a signature using the mock wallet's private key
+        (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
+
+        // not right signer
+        assertTrue(ECDSA.recover(digest, signature) == TEST_SIGNER);
+
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
+
+        // create the random id
+        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+
+        // no time warp
+        vm.warp(8.01 days);
+
+        // calling the function
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        address proxyAddress = proxyFactory.deployProxyAndDistributeBySignature(
+            address(SmartContractWallet), randomId, address(proxyFactory), signature, sendingData
+        );
+
+        // verify if the function executed successfully
+        assertTrue(proxyAddress == address(0), "Proxy deployment should not succeed");
+        // Add any other assertions you need to verify the function's behavior
+    }
+
+    function testIfConditionsMetThenSucceedsWithEip1271()
+        public
+        setUpContestForJasonAndSentJpycv2Token(address(SmartContractWallet))
+    {
+        // before
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
+
+        // create a signature using the mock wallet's private key
+        (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
+        assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
+
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
+
+        // create the random id
+        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+
+        // warp time
+        vm.warp(8.01 days);
+
+        // call deployProxyAndDistributeByOwner function with the signature
+        address proxyAddress = proxyFactory.deployProxyAndDistributeBySignature(
+            address(SmartContractWallet), randomId, address(distributor), signature, sendingData
+        );
+
+        // verify if the function executed successfully
+        assertTrue(proxyAddress != address(0), "Proxy deployment failed");
+
+        // after
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
 }

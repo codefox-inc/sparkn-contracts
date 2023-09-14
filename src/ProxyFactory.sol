@@ -26,6 +26,7 @@ pragma solidity 0.8.18;
 import {Ownable} from "openzeppelin/access/Ownable.sol";
 import {ECDSA} from "openzeppelin/utils/cryptography/ECDSA.sol";
 import {EIP712} from "openzeppelin/utils/cryptography/EIP712.sol";
+import {SignatureChecker} from "openzeppelin/utils/cryptography/SignatureChecker.sol";
 import {Proxy} from "./Proxy.sol";
 
 /**
@@ -35,6 +36,8 @@ import {Proxy} from "./Proxy.sol";
  * @dev This contract is the factory contract which will be used to deploy proxy contracts.
  */
 contract ProxyFactory is Ownable, EIP712 {
+    using SignatureChecker for address;
+
     //////////////////////
     /////// Error ////////
     //////////////////////
@@ -157,7 +160,7 @@ contract ProxyFactory is Ownable, EIP712 {
         bytes calldata data
     ) public returns (address) {
         bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(contestId, data)));
-        if (ECDSA.recover(digest, signature) != organizer) revert ProxyFactory__InvalidSignature();
+        if (!organizer.isValidSignatureNow(digest, signature)) revert ProxyFactory__InvalidSignature();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         if (saltToCloseTime[salt] > block.timestamp) revert ProxyFactory__ContestIsNotClosed();
@@ -185,8 +188,6 @@ contract ProxyFactory is Ownable, EIP712 {
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         if (saltToCloseTime[salt] + EXPIRATION_TIME > block.timestamp) revert ProxyFactory__ContestIsNotExpired();
-        // require(saltToCloseTime[salt] == 0, "Contest is not registered");
-        // require(saltToCloseTime[salt] < block.timestamp + EXPIRATION_TIME, "Contest is not expired");
         address proxy = _deployProxy(organizer, contestId, implementation);
         _distribute(proxy, data);
         return proxy;
