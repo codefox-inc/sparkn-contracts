@@ -11,6 +11,7 @@ import {Proxy} from "../../src/Proxy.sol";
 import {Distributor} from "../../src/Distributor.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {DeployContracts} from "../../script/DeployContracts.s.sol";
+import {ERC1271WalletMock, ERC1271MaliciousMock} from "openzeppelin/mocks/ERC1271WalletMock.sol";
 
 abstract contract HelperContract is Test {
     // 3 main contracts
@@ -20,6 +21,10 @@ abstract contract HelperContract is Test {
 
     // distributor instance through proxy address
     Distributor public proxyWithDistributorLogic;
+
+    // EIP1271 SmartContractWallet
+    ERC1271WalletMock public SmartContractWallet;
+    ERC1271WalletMock public SmartContractWallet2;
 
     // contract address for proxy which is deployed by proxy factory
     address public deployedProxy;
@@ -70,5 +75,8 @@ abstract contract HelperContract is Test {
         DeployContracts deployContracts = new DeployContracts();
         (proxyFactory, distributor, config) = deployContracts.run();
         (jpycv1Address, jpycv2Address, usdcAddress, usdtAddress, deployerKey) = config.activeNetworkConfig();
+        // 1. Deploy the ERC1271WalletMock contract
+        SmartContractWallet = new ERC1271WalletMock(TEST_SIGNER); // Assuming factoryAdmin is the owner of the mock wallet
+        SmartContractWallet2 = new ERC1271WalletMock(TEST_SIGNER2); // Assuming factoryAdmin is the owner of the mock wallet
     }
 }
