@@ -12,7 +12,7 @@ import {Distributor} from "../../src/Distributor.sol";
 import {HelperContract} from "../integration/HelperContract.t.sol";
 
 contract FuzzTestProxyFactory is StdCheats, HelperContract {
-    bytes32 constant SOMEID = keccak256(abi.encode("Jason", "001"));
+    bytes32 constant public SOMEID = keccak256(abi.encode("Jason", "001"));
 
     function setUp() public {
         // set up balances of each token belongs to each user
@@ -397,7 +397,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // 15 days is the edge of close time, after that tx can go through
         vm.warp(16 days);
         vm.startPrank(factoryAdmin);
-        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressMismatch.selector);
         proxyFactory.distributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
@@ -428,7 +428,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // 15 days is the edge of close time, after that tx can go through
         vm.warp(8.01 days);
         vm.startPrank(factoryAdmin);
-        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressMismatch.selector);
         proxyFactory.distributeByOwner(proxyAddress, organizer, SOMEID, randomImple, dataToSendToAdmin);
         vm.stopPrank();
     }
@@ -460,7 +460,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // 15 days is the edge of close time, after that tx can go through
         vm.warp(8.01 days);
         vm.startPrank(factoryAdmin);
-        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressMismatch.selector);
         proxyFactory.distributeByOwner(proxyAddress, randomUsr, SOMEID, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
