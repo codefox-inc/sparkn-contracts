@@ -49,8 +49,9 @@ contract ProxyFactory is Ownable, EIP712 {
     error ProxyFactory__ContestIsNotClosed();
     error ProxyFactory__ContestIsNotRegistered();
     error ProxyFactory__ContestIsNotExpired();
-    error ProxyFactory__DelegateCallFailed();
     error ProxyFactory__ProxyAddressCannotBeZero();
+    error ProxyFactory__ProxyAddressMismatch();
+    error ProxyFactory__DelegateCallFailed();
 
     /////////////////////
     /////// Event ///////
@@ -212,6 +213,9 @@ contract ProxyFactory is Ownable, EIP712 {
     ) public onlyOwner {
         if (proxy == address(0)) revert ProxyFactory__ProxyAddressCannotBeZero();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
+        if (proxy != getProxyAddress(salt, implementation)) {
+            revert ProxyFactory__ProxyAddressMismatch();
+        }
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         // distribute only when it exists and expired
         if (saltToCloseTime[salt] + EXPIRATION_TIME > block.timestamp) revert ProxyFactory__ContestIsNotExpired();
