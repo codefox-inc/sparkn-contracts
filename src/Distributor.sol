@@ -143,6 +143,7 @@ contract Distributor {
         uint256 winnersLength = winners.length; // cache length
         for (uint256 i; i < winnersLength;) {
             uint256 amount = totalAmount * percentages[i] / BASIS_POINTS;
+            if (winners[i] == address(0)) revert Distributor__NoZeroAddress();
             erc20.safeTransfer(winners[i], amount);
             unchecked {
                 ++i;
