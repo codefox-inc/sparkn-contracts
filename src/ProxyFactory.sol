@@ -64,6 +64,8 @@ contract ProxyFactory is Ownable, EIP712 {
     /////// State Variables ////////
     ////////////////////////////////
     // contest distribution expiration
+    bytes32 internal constant _DEPLOY_AND_DISTRIBUTE_TYPEHASH =
+        keccak256("DeployAndDistribute(bytes32 contestId,bytes data)");
     uint256 public constant EXPIRATION_TIME = 7 days;
     uint256 public constant MAX_CONTEST_PERIOD = 28 days;
 
@@ -159,7 +161,7 @@ contract ProxyFactory is Ownable, EIP712 {
         bytes calldata signature,
         bytes calldata data
     ) public returns (address) {
-        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(contestId, data)));
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, contestId, data)));
         if (!organizer.isValidSignatureNow(digest, signature)) revert ProxyFactory__InvalidSignature();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
