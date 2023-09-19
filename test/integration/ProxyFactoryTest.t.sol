@@ -839,7 +839,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
         vm.warp(8.01 days);
         // expect revert with wrong address erecover
-        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__InvalidSignature.selector);
         proxyFactory.deployProxyAndDistributeBySignature(
             TEST_SIGNER, randomId, address(proxyFactory), signature, sendingData
         );
@@ -1075,7 +1075,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(8.01 days);
 
         // calling the function
-        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__InvalidSignature.selector);
         address proxyAddress = proxyFactory.deployProxyAndDistributeBySignature(
             address(SmartContractWallet), randomId, address(proxyFactory), signature, sendingData
         );
