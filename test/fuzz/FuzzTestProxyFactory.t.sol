@@ -398,7 +398,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // 15 days is the edge of close time, after that tx can go through
         vm.warp(16 days);
         vm.startPrank(factoryAdmin);
-        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressMismatch.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
         proxyFactory.distributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
@@ -429,7 +429,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // 15 days is the edge of close time, after that tx can go through
         vm.warp(8.01 days);
         vm.startPrank(factoryAdmin);
-        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressMismatch.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
         proxyFactory.distributeByOwner(proxyAddress, organizer, SOMEID, randomImple, dataToSendToAdmin);
         vm.stopPrank();
     }
@@ -461,7 +461,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         // 15 days is the edge of close time, after that tx can go through
         vm.warp(8.01 days);
         vm.startPrank(factoryAdmin);
-        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressMismatch.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
         proxyFactory.distributeByOwner(proxyAddress, randomUsr, SOMEID, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
