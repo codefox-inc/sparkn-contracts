@@ -68,7 +68,7 @@ contract ProxyFactory is Ownable, EIP712 {
     ////////////////////////////////
     // contest distribution expiration
     bytes32 internal constant _DEPLOY_AND_DISTRIBUTE_TYPEHASH =
-        keccak256("DeployAndDistribute(bytes32 contestId,bytes data)");
+        keccak256("DeployAndDistribute(address organizer,bytes32 contestId,address implementation,bytes data)");
     uint256 public constant EXPIRATION_TIME = 7 days;
     uint256 public constant MAX_CONTEST_PERIOD = 28 days;
 
