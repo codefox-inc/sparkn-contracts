@@ -49,9 +49,11 @@ contract ProxyFactory is Ownable, EIP712 {
     error ProxyFactory__ContestIsNotClosed();
     error ProxyFactory__ContestIsNotRegistered();
     error ProxyFactory__ContestIsNotExpired();
-    error ProxyFactory__DelegateCallFailed();
     error ProxyFactory__ProxyAddressCannotBeZero();
     error ProxyFactory__ImplementationNotDeployed();
+    error ProxyFactory__ProxyAddressMismatch();
+    error ProxyFactory__DelegateCallFailed();
+    error ProxyFactory__ProxyIsNotAContract();
 
     /////////////////////
     /////// Event ///////
@@ -214,6 +216,9 @@ contract ProxyFactory is Ownable, EIP712 {
     ) public onlyOwner {
         if (proxy == address(0)) revert ProxyFactory__ProxyAddressCannotBeZero();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
+        if (proxy != getProxyAddress(salt, implementation)) {
+            revert ProxyFactory__ProxyAddressMismatch();
+        }
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         // distribute only when it exists and expired
         if (saltToCloseTime[salt] + EXPIRATION_TIME > block.timestamp) revert ProxyFactory__ContestIsNotExpired();
@@ -248,9 +253,11 @@ contract ProxyFactory is Ownable, EIP712 {
 
     /// @dev The internal function to be used to call proxy to distribute prizes to the winners
     /// @dev the data passed in should be the calling data of the distributing logic
+    /// @dev This is an internal function and it will revert if the proxy is not a contract
     /// @param proxy The proxy address
     /// @param data The prize distribution data
     function _distribute(address proxy, bytes calldata data) internal {
+        if (proxy.code.length  == 0) revert ProxyFactory__ProxyIsNotAContract();
         (bool success,) = proxy.call(data);
         if (!success) revert ProxyFactory__DelegateCallFailed();
         emit Distributed(proxy, data);
