@@ -777,7 +777,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         );
         bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
         bytes memory sendingData = createData();
-        bytes32 data = keccak256(abi.encode(randomId_,  address(distributor),  sendingData));
+        bytes32 data = keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, randomId_,address(distributor), sendingData));
         bytes32 digest = ECDSA.toTypedDataHash(domainSeparatorV4, data);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateK, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
