@@ -1223,6 +1223,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
             TEST_SIGNER, contestId, address(newDistributor), signature, sendingData
         );
         assertFalse(MockERC20(jpycv2Address).balanceOf(user1) == 19000 ether);
+    }
 
     // special poc test case
     function testOwnerCannotIncorrectlyPullFundsFromContestsNotYetExpired() public {
