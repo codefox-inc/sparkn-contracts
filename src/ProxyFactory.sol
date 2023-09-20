@@ -49,8 +49,11 @@ contract ProxyFactory is Ownable, EIP712 {
     error ProxyFactory__ContestIsNotClosed();
     error ProxyFactory__ContestIsNotRegistered();
     error ProxyFactory__ContestIsNotExpired();
-    error ProxyFactory__DelegateCallFailed();
     error ProxyFactory__ProxyAddressCannotBeZero();
+    error ProxyFactory__ImplementationNotDeployed();
+    error ProxyFactory__ProxyAddressMismatch();
+    error ProxyFactory__DelegateCallFailed();
+    error ProxyFactory__ProxyIsNotAContract();
 
     /////////////////////
     /////// Event ///////
@@ -112,6 +115,7 @@ contract ProxyFactory is Ownable, EIP712 {
         onlyOwner
     {
         if (organizer == address(0) || implementation == address(0)) revert ProxyFactory__NoZeroAddress();
+        if (implementation.code.length == 0) revert ProxyFactory__ImplementationNotDeployed();
         if (closeTime > block.timestamp + MAX_CONTEST_PERIOD || closeTime < block.timestamp) {
             revert ProxyFactory__CloseTimeNotInRange();
         }
@@ -161,7 +165,8 @@ contract ProxyFactory is Ownable, EIP712 {
         bytes calldata signature,
         bytes calldata data
     ) public returns (address) {
-        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, contestId, data)));
+        bytes32 digest =
+            _hashTypedDataV4(keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, contestId, implementation, data)));
         if (!organizer.isValidSignatureNow(digest, signature)) revert ProxyFactory__InvalidSignature();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
@@ -214,6 +219,9 @@ contract ProxyFactory is Ownable, EIP712 {
     ) public onlyOwner {
         if (proxy == address(0)) revert ProxyFactory__ProxyAddressCannotBeZero();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
+        if (proxy != getProxyAddress(salt, implementation)) {
+            revert ProxyFactory__ProxyAddressMismatch();
+        }
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         // distribute only when it exists and expired
         if (saltToCloseTime[salt] + EXPIRATION_TIME > block.timestamp) revert ProxyFactory__ContestIsNotExpired();
@@ -226,6 +234,7 @@ contract ProxyFactory is Ownable, EIP712 {
     /// @param implementation The implementation address
     /// @return proxy The calculated proxy address
     function getProxyAddress(bytes32 salt, address implementation) public view returns (address proxy) {
+        if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         bytes memory code = abi.encodePacked(type(Proxy).creationCode, uint256(uint160(implementation)));
         bytes32 hash = keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(code)));
         proxy = address(uint160(uint256(hash)));
@@ -247,9 +256,11 @@ contract ProxyFactory is Ownable, EIP712 {
 
     /// @dev The internal function to be used to call proxy to distribute prizes to the winners
     /// @dev the data passed in should be the calling data of the distributing logic
+    /// @dev This is an internal function and it will revert if the proxy is not a contract
     /// @param proxy The proxy address
     /// @param data The prize distribution data
     function _distribute(address proxy, bytes calldata data) internal {
+        if (proxy.code.length == 0) revert ProxyFactory__ProxyIsNotAContract();
         (bool success,) = proxy.call(data);
         if (!success) revert ProxyFactory__DelegateCallFailed();
         emit Distributed(proxy, data);
