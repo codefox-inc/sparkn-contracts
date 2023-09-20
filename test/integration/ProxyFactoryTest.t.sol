@@ -708,6 +708,57 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         // stadiumAddress get 500 ether from sponsor and then get all the token sent from sponsor by mistake.
     }
 
+    function testRevertsIfAddressIsNotAContractAndItSucceedsIfItIsProxyAddressDistributeByOwner()
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer)
+    {
+        // before
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
+
+        // prepare for data
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes32 salt_ = keccak256(abi.encode(organizer, randomId_, address(distributor)));
+        bytes memory data = createData();
+
+        // calculate proxy address
+        address calculatedProxyAddress = proxyFactory.getProxyAddress(salt_, address(distributor));
+
+        // owner deploy and distribute
+        vm.warp(16 days);
+        vm.startPrank(factoryAdmin);
+        address emptyAddress = makeAddr("empty");
+        address proxyAddress =
+            proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, address(distributor), data);
+        vm.stopPrank();
+        assertEq(proxyAddress, calculatedProxyAddress);
+
+        // sponsor send token to proxy by mistake
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+
+        bytes memory dataToSendToAdmin = createDataToSendToAdmin();
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyIsNotAContract.selector);
+        proxyFactory.distributeByOwner(emptyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        vm.stopPrank();
+
+        // after
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress), 10000 ether);
+        // stadiumAddress get 500 ether from sponsor and then get all the token sent from sponsor by mistake.
+
+        vm.startPrank(factoryAdmin);
+        proxyFactory.distributeByOwner(
+            calculatedProxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin
+        );
+        vm.stopPrank();
+
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 10500 ether);
+    }
+
     ///////////////////////////////////////////
     /// deployProxyAndDistributeBySignature ///
     ///////////////////////////////////////////
