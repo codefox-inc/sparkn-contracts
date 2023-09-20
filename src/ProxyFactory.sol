@@ -222,7 +222,6 @@ contract ProxyFactory is Ownable, EIP712 {
         if (proxy != getProxyAddress(salt, implementation)) {
             revert ProxyFactory__ProxyAddressMismatch();
         }
-        if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         // distribute only when it exists and expired
         if (saltToCloseTime[salt] + EXPIRATION_TIME > block.timestamp) revert ProxyFactory__ContestIsNotExpired();
         _distribute(proxy, data);

@@ -148,6 +148,17 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
     ////////////////
     // setContest //
     ////////////////
+    function testImplementationHasNoCodeThenRevert() public {
+        bytes32 randomId = keccak256(abi.encode("Jason", "001")); // do not use abi.encodePacked because hash collision can happen.
+        // console.logBytes32(randomId);
+        // bytes32 contestId_ = 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef;
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ImplementationNotDeployed.selector);
+        proxyFactory.setContest(organizer, randomId, block.timestamp + 1 days, makeAddr("nocode"));
+        // console.log(bytes32(0x01));
+        vm.stopPrank();
+    }
+
     function testOrganizerIsZeroThenRevert() public {
         bytes32 randomId = keccak256(abi.encode("Jason", "001")); // do not use abi.encodePacked because hash collision can happen.
         // console.logBytes32(randomId);
@@ -777,7 +788,8 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         );
         bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
         bytes memory sendingData = createData();
-        bytes32 data = keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, randomId_,address(distributor), sendingData));
+        bytes32 data =
+            keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, randomId_, address(distributor), sendingData));
         bytes32 digest = ECDSA.toTypedDataHash(domainSeparatorV4, data);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateK, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
@@ -1170,7 +1182,6 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
 
-
     // test/integration/ProxyFactoryTest.t.sol:ProxyFactoryTest
     // $ forge test --match-test "testSignatureCanBeUsedToNewImplementation" -vvv
     function testSignatureCannotBeUsedToNewImplementation() public {
@@ -1301,5 +1312,106 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_1), 11000 ether, "proxy1 balance not 11000e18");
         // contest_2 is fully drained
         assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_2), 600 ether, "proxy2 balance not zero");
+    }
+
+    // additional tests added after contest's fixing
+    ////////////////////////////
+    ////// test winners ////////
+    ////////////////////////////
+
+    function createDataIncludesZeroAddress() public view returns (bytes memory data) {
+        // address[] memory tokens_ = new address[](1);
+        // tokens_[0] = jpycv2Address;
+        address[] memory winners = new address[](3);
+        winners[0] = user1;
+        winners[1] = address(100);
+        winners[2] = address(0);
+        // console.logAddress(winners[0]);
+        // console.logAddress(winners[1]);
+        // console.logAddress(winners[2]);
+        uint256[] memory percentages_ = new uint256[](3);
+        percentages_[0] = 1000;
+        percentages_[1] = 8000;
+        percentages_[2] = 500;
+        data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_, "");
+    }
+
+    function createSignatureByASignerIncludesZeroAddress(uint256 privateK)
+        public
+        view
+        returns (bytes32, bytes memory, bytes memory)
+    {
+        // organizer is test signer this time
+        // build the digest according to EIP712 and sign it by test signer to create signature
+        bytes32 domainSeparatorV4 = keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes("ProxyFactory")),
+                keccak256(bytes("1")),
+                block.chainid,
+                address(proxyFactory)
+            )
+        );
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes memory sendingData = createDataIncludesZeroAddress();
+        bytes32 data =
+            keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, randomId_, address(distributor), sendingData));
+        bytes32 digest = ECDSA.toTypedDataHash(domainSeparatorV4, data);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateK, digest);
+        bytes memory signature = abi.encodePacked(r, s, v);
+        return (digest, sendingData, signature);
+    }
+
+    function testRevertsifWinnersAddressesIncludeZeroAddress()
+        public
+        setUpContestForJasonAndSentJpycv2Token(TEST_SIGNER)
+    {
+        // before
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
+
+        (bytes32 digest, bytes memory sendingData, bytes memory signature) =
+            createSignatureByASignerIncludesZeroAddress(TEST_SIGNER_KEY);
+        assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
+        bool result = TEST_SIGNER.isValidSignatureNow(digest, signature);
+        assertEq(result, true);
+
+        bytes32 randomId = keccak256(abi.encode("Jason", "001"));
+        vm.warp(8.01 days);
+        // it won't succeeds
+        vm.expectRevert(ProxyFactory.ProxyFactory__DelegateCallFailed.selector);
+        proxyFactory.deployProxyAndDistributeBySignature(
+            TEST_SIGNER, randomId, address(distributor), signature, sendingData
+        );
+
+        // after
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
+    }
+
+    /// distributeByOwner()
+    function testRevertsIfProxyAddressHasNoCodeDistributeByOwner() public {
+        vm.startPrank(factoryAdmin);
+        bytes32 randomId = keccak256(abi.encode("Waterloo", "991"));
+        proxyFactory.setContest(organizer, randomId, block.timestamp + 8 days, address(distributor));
+        vm.stopPrank();
+        bytes32 salt = keccak256(abi.encode(organizer, randomId, address(distributor)));
+        address proxyAddress = proxyFactory.getProxyAddress(salt, address(distributor));
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+        // console.log(MockERC20(jpycv2Address).balanceOf(proxyAddress));
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress), 10000 ether);
+
+        // create data to send the token to admin
+        bytes memory dataToSendToAdmin = createDataToSendToAdmin();
+
+        // time is ok
+        vm.warp(16 days);
+        // prank admin
+        vm.prank(factoryAdmin);
+        // it will revert cuz proxy is not deployed yet
+        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyIsNotAContract.selector);
+        proxyFactory.distributeByOwner(proxyAddress, organizer, randomId, address(distributor), dataToSendToAdmin);
     }
 }
