@@ -708,6 +708,57 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         // stadiumAddress get 500 ether from sponsor and then get all the token sent from sponsor by mistake.
     }
 
+    function testRevertsIfAddressIsNotAContractAndItSucceedsIfItIsProxyAddressDistributeByOwner()
+        public
+        setUpContestForJasonAndSentJpycv2Token(organizer)
+    {
+        // before
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
+
+        // prepare for data
+        bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
+        bytes32 salt_ = keccak256(abi.encode(organizer, randomId_, address(distributor)));
+        bytes memory data = createData();
+
+        // calculate proxy address
+        address calculatedProxyAddress = proxyFactory.getProxyAddress(salt_, address(distributor));
+
+        // owner deploy and distribute
+        vm.warp(16 days);
+        vm.startPrank(factoryAdmin);
+        address emptyAddress = makeAddr("empty");
+        address proxyAddress =
+            proxyFactory.deployProxyAndDistributeByOwner(organizer, randomId_, address(distributor), data);
+        vm.stopPrank();
+        assertEq(proxyAddress, calculatedProxyAddress);
+
+        // sponsor send token to proxy by mistake
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+
+        bytes memory dataToSendToAdmin = createDataToSendToAdmin();
+        vm.startPrank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressMismatch.selector);
+        proxyFactory.distributeByOwner(emptyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        vm.stopPrank();
+
+        // after
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress), 10000 ether);
+        // stadiumAddress get 500 ether from sponsor and then get all the token sent from sponsor by mistake.
+
+        vm.startPrank(factoryAdmin);
+        proxyFactory.distributeByOwner(
+            calculatedProxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin
+        );
+        vm.stopPrank();
+
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 10500 ether);
+    }
+
     ///////////////////////////////////////////
     /// deployProxyAndDistributeBySignature ///
     ///////////////////////////////////////////
@@ -1119,10 +1170,10 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
 
+
     // test/integration/ProxyFactoryTest.t.sol:ProxyFactoryTest
-// $ forge test --match-test "testSignatureCanBeUsedToNewImplementation" -vvv
-//
-    function testSignatureCanBeUsedToNewImplementation() public {
+    // $ forge test --match-test "testSignatureCanBeUsedToNewImplementation" -vvv
+    function testSignatureCannotBeUsedToNewImplementation() public {
         address organizer = TEST_SIGNER;
         bytes32 contestId = keccak256(abi.encode("Jason", "001"));
         //
@@ -1172,5 +1223,82 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
             TEST_SIGNER, contestId, address(newDistributor), signature, sendingData
         );
         assertFalse(MockERC20(jpycv2Address).balanceOf(user1) == 19000 ether);
+
+    // special poc test case
+    function testOwnerCannotIncorrectlyPullFundsFromContestsNotYetExpired() public {
+        // Imagine that 2 contests are started by the same organizer & sponsor. This is just for
+        // simplicity; the organizers/sponsors can be considered as different too for the contests in question.
+
+        vm.startPrank(factoryAdmin);
+        bytes32 randomId_1 = keccak256(abi.encode("Jason", "015")); // contest_1
+        bytes32 randomId_2 = keccak256(abi.encode("Watson", "016")); // contest_2
+        proxyFactory.setContest(organizer, randomId_1, block.timestamp + 8 days, address(distributor));
+        proxyFactory.setContest(organizer, randomId_2, block.timestamp + 10 days, address(distributor));
+        vm.stopPrank();
+
+        bytes32 salt_1 = keccak256(abi.encode(organizer, randomId_1, address(distributor)));
+        address proxyAddress_1 = proxyFactory.getProxyAddress(salt_1, address(distributor));
+        bytes32 salt_2 = keccak256(abi.encode(organizer, randomId_2, address(distributor)));
+        address proxyAddress_2 = proxyFactory.getProxyAddress(salt_2, address(distributor));
+
+        vm.startPrank(sponsor);
+        // sponsor funds both his contests
+        MockERC20(jpycv2Address).transfer(proxyAddress_1, 10000 ether);
+        MockERC20(jpycv2Address).transfer(proxyAddress_2, 500 ether);
+        vm.stopPrank();
+
+        // before
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether, "user1 balance not zero");
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether, "STADIUM balance not zero");
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_1), 10000 ether, "proxy1 balance not 10000e18");
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_2), 500 ether, "proxy2 balance not 500e18");
+
+        bytes memory data = createData();
+
+        // 9 days later, organizer deploy and distribute -- for contest_1
+        vm.warp(9 days);
+        vm.prank(organizer);
+        proxyFactory.deployProxyAndDistribute(randomId_1, address(distributor), data);
+        // sponsor send token to proxy by mistake
+        vm.prank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress_1, 11000 ether);
+
+        // 11 days later, organizer deploy and distribute -- for contest_2
+        vm.warp(11 days);
+        vm.prank(organizer);
+        proxyFactory.deployProxyAndDistribute(randomId_2, address(distributor), data);
+        // sponsor send token to proxy by mistake
+        vm.prank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress_2, 600 ether);
+
+        // create data to send the token to admin
+        bytes memory dataToSendToAdmin = createDataToSendToAdmin();
+
+        // 16 days later from the start date, contest_1 has EXPIRED,
+        // but contest_2 is only CLOSED, not "EXPIRED".
+        // Hence, Owner should NOT be able to distribute rewards from funds reserved for contest_2.
+        vm.warp(16 days);
+
+        // Owner provides `proxyAddress_2` by mistake, but remaining params are for `contest_1`
+
+        // after fixing this will revert by the added error
+        vm.prank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressMismatch.selector);
+        proxyFactory.distributeByOwner(proxyAddress_2, organizer, randomId_1, address(distributor), dataToSendToAdmin);
+
+        // after fixing this will revert by the added error
+        vm.prank(factoryAdmin);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressMismatch.selector);
+        proxyFactory.distributeByOwner(proxyAddress_1, organizer, randomId_2, address(distributor), dataToSendToAdmin);
+        // above call should have reverted with "ProxyFactory__ContestIsNotExpired()"
+
+        // after
+        // STADIUM balance has now become // (10000 + 500) * 0.95 = 9975
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9975 ether, "user1 balance not zero");
+        // (10000 + 500) * 0.05 = 525
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 525 ether, "STADIUM balance not 1125e18");
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_1), 11000 ether, "proxy1 balance not 11000e18");
+        // contest_2 is fully drained
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_2), 600 ether, "proxy2 balance not zero");
     }
 }

@@ -12,7 +12,7 @@ import {Distributor} from "../../src/Distributor.sol";
 import {HelperContract} from "../integration/HelperContract.t.sol";
 
 contract FuzzTestProxyFactory is StdCheats, HelperContract {
-    bytes32 constant SOMEID = keccak256(abi.encode("Jason", "001"));
+    bytes32 constant public SOMEID = keccak256(abi.encode("Jason", "001"));
 
     function setUp() public {
         // set up balances of each token belongs to each user
@@ -99,16 +99,17 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.stopPrank();
     }
 
-    function testFuzzCanSetContestWithAnyImplementation(address randomImple) public {
-        vm.assume(randomImple != address(0));
-        bytes32 randomId = keccak256(abi.encode("Jim", "001"));
-        vm.startPrank(factoryAdmin);
-        uint256 inputTime = block.timestamp + 1 days;
-        proxyFactory.setContest(organizer, randomId, inputTime, randomImple);
-        vm.stopPrank();
-        bytes32 salt_ = keccak256(abi.encode(organizer, randomId, randomImple));
-        assertTrue(proxyFactory.saltToCloseTime(salt_) == inputTime);
-    }
+    // due to adding the check of implementation's code size, this fuzz test is not usable anymore
+    // function testFuzzCanSetContestWithAnyImplementation(address randomImple) public {
+    //     vm.assume(randomImple != address(0));
+    //     bytes32 randomId = keccak256(abi.encode("Jim", "001"));
+    //     vm.startPrank(factoryAdmin);
+    //     uint256 inputTime = block.timestamp + 1 days;
+    //     proxyFactory.setContest(organizer, randomId, inputTime, randomImple);
+    //     vm.stopPrank();
+    //     bytes32 salt_ = keccak256(abi.encode(organizer, randomId, randomImple));
+    //     assertTrue(proxyFactory.saltToCloseTime(salt_) == inputTime);
+    // }
 
     function testFuzzCanSetContestWithAnyId(bytes32 randomId) public {
         vm.startPrank(factoryAdmin);
