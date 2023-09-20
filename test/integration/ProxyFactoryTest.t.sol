@@ -777,7 +777,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         );
         bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
         bytes memory sendingData = createData();
-        bytes32 data = keccak256(abi.encode(randomId_, sendingData));
+        bytes32 data = keccak256(abi.encode(randomId_,  address(distributor),  sendingData));
         bytes32 digest = ECDSA.toTypedDataHash(domainSeparatorV4, data);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateK, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
@@ -890,7 +890,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
         vm.warp(8.01 days);
         // expect revert with wrong address erecover
-        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__InvalidSignature.selector);
         proxyFactory.deployProxyAndDistributeBySignature(
             TEST_SIGNER, randomId, address(proxyFactory), signature, sendingData
         );
@@ -1126,7 +1126,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.warp(8.01 days);
 
         // calling the function
-        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__InvalidSignature.selector);
         address proxyAddress = proxyFactory.deployProxyAndDistributeBySignature(
             address(SmartContractWallet), randomId, address(proxyFactory), signature, sendingData
         );
@@ -1169,6 +1169,60 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
+
+
+    // test/integration/ProxyFactoryTest.t.sol:ProxyFactoryTest
+    // $ forge test --match-test "testSignatureCanBeUsedToNewImplementation" -vvv
+    function testSignatureCannotBeUsedToNewImplementation() public {
+        address organizer = TEST_SIGNER;
+        bytes32 contestId = keccak256(abi.encode("Jason", "001"));
+        //
+        // 1. Owner setContest using address(distributor)
+        vm.startPrank(factoryAdmin);
+        proxyFactory.setContest(organizer, contestId, block.timestamp + 8 days, address(distributor));
+        vm.stopPrank();
+        bytes32 salt = keccak256(abi.encode(organizer, contestId, address(distributor)));
+        address proxyAddress = proxyFactory.getProxyAddress(salt, address(distributor));
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        vm.stopPrank();
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress), 10000 ether);
+        // before
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
+        //
+        // 2. Organizer creates a signature
+        (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
+        assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
+        vm.warp(8.01 days);
+        //
+        // 3. Caller distributes prizes using the signature
+        proxyFactory.deployProxyAndDistributeBySignature(
+            TEST_SIGNER, contestId, address(distributor), signature, sendingData
+        );
+        // after
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
+        //
+        // 4. For some reason there is a new distributor implementation.
+        // The Owner set the new distributor for the same contestId
+        Distributor newDistributor = new Distributor(address(proxyFactory), stadiumAddress);
+        vm.startPrank(factoryAdmin);
+        proxyFactory.setContest(organizer, contestId, block.timestamp + 8 days, address(newDistributor));
+        vm.stopPrank();
+        bytes32 newDistributorSalt = keccak256(abi.encode(organizer, contestId, address(newDistributor)));
+        address proxyNewDistributorAddress = proxyFactory.getProxyAddress(newDistributorSalt, address(newDistributor));
+        vm.startPrank(sponsor);
+        MockERC20(jpycv2Address).transfer(proxyNewDistributorAddress, 10000 ether);
+        vm.stopPrank();
+        //
+        // 5. The caller can distribute prizes using the same signature in different distributor implementation
+        vm.warp(20 days);
+        vm.expectRevert(ProxyFactory.ProxyFactory__InvalidSignature.selector);
+        proxyFactory.deployProxyAndDistributeBySignature(
+            TEST_SIGNER, contestId, address(newDistributor), signature, sendingData
+        );
+        assertFalse(MockERC20(jpycv2Address).balanceOf(user1) == 19000 ether);
 
     // special poc test case
     function testOwnerCannotIncorrectlyPullFundsFromContestsNotYetExpired() public {
