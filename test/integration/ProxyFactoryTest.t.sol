@@ -740,7 +740,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
 
         bytes memory dataToSendToAdmin = createDataToSendToAdmin();
         vm.startPrank(factoryAdmin);
-        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyIsNotAContract.selector);
+        vm.expectRevert(ProxyFactory.ProxyFactory__ProxyAddressMismatch.selector);
         proxyFactory.distributeByOwner(emptyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
 
@@ -1171,7 +1171,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
     }
 
     // special poc test case
-    function testOwnerCanIncorrectlyPullFundsFromContestsNotYetExpired() public {
+    function testOwnerCannotIncorrectlyPullFundsFromContestsNotYetExpired() public {
         // Imagine that 2 contests are started by the same organizer & sponsor. This is just for
         // simplicity; the organizers/sponsors can be considered as different too for the contests in question.
 
