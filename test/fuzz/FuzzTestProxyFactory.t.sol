@@ -99,16 +99,17 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.stopPrank();
     }
 
-    function testFuzzCanSetContestWithAnyImplementation(address randomImple) public {
-        vm.assume(randomImple != address(0));
-        bytes32 randomId = keccak256(abi.encode("Jim", "001"));
-        vm.startPrank(factoryAdmin);
-        uint256 inputTime = block.timestamp + 1 days;
-        proxyFactory.setContest(organizer, randomId, inputTime, randomImple);
-        vm.stopPrank();
-        bytes32 salt_ = keccak256(abi.encode(organizer, randomId, randomImple));
-        assertTrue(proxyFactory.saltToCloseTime(salt_) == inputTime);
-    }
+    // due to adding the check of implementation's code size, this fuzz test is not usable anymore
+    // function testFuzzCanSetContestWithAnyImplementation(address randomImple) public {
+    //     vm.assume(randomImple != address(0));
+    //     bytes32 randomId = keccak256(abi.encode("Jim", "001"));
+    //     vm.startPrank(factoryAdmin);
+    //     uint256 inputTime = block.timestamp + 1 days;
+    //     proxyFactory.setContest(organizer, randomId, inputTime, randomImple);
+    //     vm.stopPrank();
+    //     bytes32 salt_ = keccak256(abi.encode(organizer, randomId, randomImple));
+    //     assertTrue(proxyFactory.saltToCloseTime(salt_) == inputTime);
+    // }
 
     function testFuzzCanSetContestWithAnyId(bytes32 randomId) public {
         vm.startPrank(factoryAdmin);

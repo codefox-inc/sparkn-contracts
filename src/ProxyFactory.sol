@@ -51,6 +51,7 @@ contract ProxyFactory is Ownable, EIP712 {
     error ProxyFactory__ContestIsNotExpired();
     error ProxyFactory__DelegateCallFailed();
     error ProxyFactory__ProxyAddressCannotBeZero();
+    error ProxyFactory__ImplementationNotDeployed();
 
     /////////////////////
     /////// Event ///////
@@ -110,6 +111,7 @@ contract ProxyFactory is Ownable, EIP712 {
         onlyOwner
     {
         if (organizer == address(0) || implementation == address(0)) revert ProxyFactory__NoZeroAddress();
+        if (implementation.code.length == 0) revert ProxyFactory__ImplementationNotDeployed();
         if (closeTime > block.timestamp + MAX_CONTEST_PERIOD || closeTime < block.timestamp) {
             revert ProxyFactory__CloseTimeNotInRange();
         }
@@ -224,6 +226,7 @@ contract ProxyFactory is Ownable, EIP712 {
     /// @param implementation The implementation address
     /// @return proxy The calculated proxy address
     function getProxyAddress(bytes32 salt, address implementation) public view returns (address proxy) {
+        if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
         bytes memory code = abi.encodePacked(type(Proxy).creationCode, uint256(uint160(implementation)));
         bytes32 hash = keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(code)));
         proxy = address(uint160(uint256(hash)));
