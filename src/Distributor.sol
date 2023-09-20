@@ -122,32 +122,30 @@ contract Distributor {
         }
         // winners and percentages input check
         if (winners.length == 0 || winners.length != percentages.length) revert Distributor__MismatchedArrays();
-        uint256 percentagesLength = percentages.length;
-        uint256 totalPercentage;
-        for (uint256 i; i < percentagesLength;) {
-            totalPercentage += percentages[i];
-            unchecked {
-                ++i;
-            }
-        }
-        // check if totalPercentage is correct
-        if (totalPercentage != (10000 - COMMISSION_FEE)) {
-            revert Distributor__MismatchedPercentages();
-        }
-        IERC20 erc20 = IERC20(token);
-        uint256 totalAmount = erc20.balanceOf(address(this));
 
+        // prepare for the loop
+        IERC20 erc20 = IERC20(token);
+        // cashe the total amount of token to distribute
+        uint256 totalAmount = erc20.balanceOf(address(this));
         // if there is no token to distribute, then revert
         if (totalAmount == 0) revert Distributor__NoTokenToDistribute();
-
+        
+        // percentages.length = winners length
         uint256 winnersLength = winners.length; // cache length
+        uint256 totalPercentage;
         for (uint256 i; i < winnersLength;) {
+            totalPercentage += percentages[i];
             uint256 amount = totalAmount * percentages[i] / BASIS_POINTS;
             if (winners[i] == address(0)) revert Distributor__NoZeroAddress();
             erc20.safeTransfer(winners[i], amount);
             unchecked {
                 ++i;
             }
+        }
+
+        // check if totalPercentage is correct
+        if (totalPercentage != (10000 - COMMISSION_FEE)) {
+            revert Distributor__MismatchedPercentages();
         }
 
         // send commission fee as well as all the remaining tokens to STADIUM_ADDRESS to avoid dust remaining
