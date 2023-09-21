@@ -1414,4 +1414,11 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.expectRevert(ProxyFactory.ProxyFactory__ProxyIsNotAContract.selector);
         proxyFactory.distributeByOwner(proxyAddress, organizer, randomId, address(distributor), dataToSendToAdmin);
     }
+
+    function testGetProxyAddressRevertsIfDoesntExist() public {
+        bytes32 randomId = keccak256(abi.encode("NotRegistered", "000"));
+        bytes32 salt = keccak256(abi.encode(organizer, randomId, address(distributor)));
+        vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
+        proxyFactory.getProxyAddress(salt, address(distributor));
+    }
 }
