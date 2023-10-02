@@ -116,7 +116,6 @@ contract Distributor {
         internal
     {
         // token address input check
-        if (token == address(0)) revert Distributor__NoZeroAddress();
         if (!_isWhiteListed(token)) {
             revert Distributor__InvalidTokenAddress();
         }
