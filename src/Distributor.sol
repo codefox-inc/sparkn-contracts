@@ -103,7 +103,7 @@ contract Distributor {
      * The token address must be one of the whitelisted tokens
      * The winners and percentages array are supposed not to be so long, so the loop can stay unbounded
      * The total percentage must be correct. It must be (100 - COMMITION_FEE).
-     * Finally send the remained token(fee) to STADIUM_ADDRESS with no dust in the contract
+     * Finally send the remained token(fee) to proxyFactory's stadiumAddress with no dust in the contract
      * @param token The token address
      * @param winners The addresses of winners
      * @param percentages The percentages of winners
@@ -145,13 +145,13 @@ contract Distributor {
             revert Distributor__MismatchedPercentages();
         }
 
-        // send commission fee as well as all the remaining tokens to STADIUM_ADDRESS to avoid dust remaining
+        // send commission fee as well as all the remaining tokens to stadiumAddress to avoid dust remaining
         _commissionTransfer(erc20);
         emit Distributed(token, winners, percentages, data);
     }
 
     /**
-     * @notice Transfer commission fee to STADIUM_ADDRESS
+     * @notice Transfer commission fee to stadiumAddress
      * @dev This internal function is called after distribution in `_distribute` function
      * @param token The token address
      */
