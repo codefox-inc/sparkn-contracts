@@ -60,6 +60,7 @@ contract ProxyFactory is Ownable, EIP712 {
     event SetContest(
         address indexed organizer, bytes32 indexed contestId, uint256 closeTime, address indexed implementation
     );
+    event SetStadiumAddress(address indexed stadiumAddress);
     event Distributed(address indexed proxy, bytes data);
 
     ////////////////////////////////
@@ -70,6 +71,7 @@ contract ProxyFactory is Ownable, EIP712 {
         keccak256("DeployAndDistribute(bytes32 contestId,address implementation,bytes data)");
     uint256 public constant EXPIRATION_TIME = 7 days;
     uint256 public constant MAX_CONTEST_PERIOD = 28 days;
+    address public stadiumAddress; // official address to receive commission fee
 
     /// @notice record contest close time by salt
     /// @dev The contest doesn't exist when value is 0
@@ -85,8 +87,9 @@ contract ProxyFactory is Ownable, EIP712 {
      * @notice the array is not supposed to be so long because only major tokens will get listed
      * @param _whitelistedTokens The tokens array to get whitelisted
      */
-    constructor(address[] memory _whitelistedTokens) EIP712("ProxyFactory", "1") Ownable() {
+    constructor(address[] memory _whitelistedTokens, address _stadiumAddress) EIP712("ProxyFactory", "1") Ownable() {
         if (_whitelistedTokens.length == 0) revert ProxyFactory__NoEmptyArray();
+        if (_stadiumAddress == address(0)) revert ProxyFactory__NoZeroAddress();
         for (uint256 i; i < _whitelistedTokens.length;) {
             if (_whitelistedTokens[i] == address(0)) revert ProxyFactory__NoZeroAddress();
             whitelistedTokens[_whitelistedTokens[i]] = true;
@@ -94,6 +97,7 @@ contract ProxyFactory is Ownable, EIP712 {
                 ++i;
             }
         }
+        stadiumAddress = _stadiumAddress;
     }
 
     ////////////////////////////////////////////
@@ -233,6 +237,17 @@ contract ProxyFactory is Ownable, EIP712 {
         bytes memory code = abi.encodePacked(type(Proxy).creationCode, uint256(uint160(implementation)));
         bytes32 hash = keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(code)));
         proxy = address(uint160(uint256(hash)));
+    }
+
+    /**
+     * @notice Only owner can set stadium address
+     * @dev Set stadium address
+     * @param newStadiumAddress The new stadium address
+     */
+    function setStadiumAddress(address newStadiumAddress) public onlyOwner {
+        if (newStadiumAddress == address(0)) revert ProxyFactory__NoZeroAddress();
+        stadiumAddress = newStadiumAddress;
+        emit SetStadiumAddress(newStadiumAddress);
     }
 
     ///////////////////////////////////

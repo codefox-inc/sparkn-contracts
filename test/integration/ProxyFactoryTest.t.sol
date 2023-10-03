@@ -116,7 +116,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         address[] memory tokensToWhitelist = new address[](0);
         // should revert
         vm.expectRevert(ProxyFactory.ProxyFactory__NoEmptyArray.selector);
-        new ProxyFactory(tokensToWhitelist);
+        new ProxyFactory(tokensToWhitelist, stadiumAddress);
     }
 
     function testConstructorWhitelistedTokensWithZeroAddressesThenRevert() public {
@@ -125,7 +125,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         address[] memory tokensToWhitelist = new address[](2);
         // should revert
         vm.expectRevert(ProxyFactory.ProxyFactory__NoZeroAddress.selector);
-        new ProxyFactory(tokensToWhitelist);
+        new ProxyFactory(tokensToWhitelist, stadiumAddress);
     }
 
     function testConstructorVariablesAreSetCorrectly() public {
@@ -136,7 +136,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         tokensToWhitelist[1] = jpycv2Address;
         tokensToWhitelist[2] = usdcAddress;
         // deploy contracts
-        ProxyFactory newProxyFactory = new ProxyFactory(tokensToWhitelist);
+        ProxyFactory newProxyFactory = new ProxyFactory(tokensToWhitelist, stadiumAddress);
         // check whitelist
         assertTrue(newProxyFactory.whitelistedTokens(jpycv1Address));
         assertTrue(newProxyFactory.whitelistedTokens(jpycv2Address));
@@ -1189,7 +1189,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         //
         // 4. For some reason there is a new distributor implementation.
         // The Owner set the new distributor for the same contestId
-        Distributor newDistributor = new Distributor(address(proxyFactory), stadiumAddress);
+        Distributor newDistributor = new Distributor(address(proxyFactory));
         vm.startPrank(factoryAdmin);
         proxyFactory.setContest(organizer, contestId, block.timestamp + 8 days, address(newDistributor));
         vm.stopPrank();
@@ -1389,10 +1389,61 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         proxyFactory.distributeByOwner(organizer, randomId, address(distributor), dataToSendToAdmin);
     }
 
+    ///////////////////////////
+    ///// getProxyAddress /////
+    ///////////////////////////
+
     function testGetProxyAddressRevertsIfDoesntExist() public {
         bytes32 randomId = keccak256(abi.encode("NotRegistered", "000"));
         bytes32 salt = keccak256(abi.encode(organizer, randomId, address(distributor)));
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
         proxyFactory.getProxyAddress(salt, address(distributor));
+    }
+
+    //////////////////////////
+    ///// stadiumAddress /////
+    //////////////////////////
+
+    function testCanGetStadiumAddress() public {
+        address stadiumAddressGot = proxyFactory.stadiumAddress();
+        assertEq(stadiumAddressGot, stadiumAddress);
+    }
+
+    function testOwnerCanSetStadiumAddress() public {
+        address newStadiumAddress = address(0x123);
+        vm.prank(factoryAdmin);
+        proxyFactory.setStadiumAddress(newStadiumAddress);
+        address stadiumAddressGot = proxyFactory.stadiumAddress();
+        assertEq(stadiumAddressGot, newStadiumAddress);
+    }
+
+    function testNonownerCannotSetStadiumAddress() public {
+        address newStadiumAddress = address(0x123);
+        address newStadiumAddress2 = makeAddr("NEW_STADIUM_ADDRESS");
+        vm.prank(organizer);
+        vm.expectRevert("Ownable: caller is not the owner");
+        proxyFactory.setStadiumAddress(newStadiumAddress);
+        vm.prank(supporter);
+        vm.expectRevert("Ownable: caller is not the owner");
+        proxyFactory.setStadiumAddress(newStadiumAddress2);
+        address stadiumAddressGot = proxyFactory.stadiumAddress();
+        assertEq(stadiumAddressGot, stadiumAddress);
+        assertFalse(stadiumAddressGot == newStadiumAddress);
+    }
+
+    function testIfStadiumAddressIsSetAsZeroInConstructorThenRevert() public {
+        address zeroStadiumAddress = address(0x0);
+        (, jpycv2Address, usdcAddress,,) = config.activeNetworkConfig();
+        address[] memory tokensToWhitelist = new address[](2);
+        // whitelist 3 kinds of tokens
+        tokensToWhitelist[0] = jpycv2Address;
+        tokensToWhitelist[1] = usdcAddress;
+        for (uint256 i; i < tokensToWhitelist.length; ++i) {
+            if (tokensToWhitelist[i] != address(0)) {
+                finalTokensToWhitelist.push(tokensToWhitelist[i]);
+            }
+        }
+        vm.expectRevert(ProxyFactory.ProxyFactory__NoZeroAddress.selector);
+        new ProxyFactory(finalTokensToWhitelist, zeroStadiumAddress);
     }
 }

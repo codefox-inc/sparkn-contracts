@@ -54,7 +54,6 @@ contract Distributor {
     /* solhint-disable */
     uint8 private constant VERSION = 1; // version is 1 for now
     address private immutable FACTORY_ADDRESS;
-    address private immutable STADIUM_ADDRESS;
     uint256 private constant COMMISSION_FEE = 500; // this can be changed in the future
     // a constant value of 10,000 (basis points) = 100%
     uint256 private constant BASIS_POINTS = 10_000;
@@ -68,14 +67,12 @@ contract Distributor {
     /// @dev initiate the contract with factory address and other key addresses, fee rate
     constructor(
         // uint256 version, // for future use
-        address factoryAddress,
-        address stadiumAddress
+        address factoryAddress
     ) 
     /* solhint-enable */
     {
-        if (factoryAddress == address(0) || stadiumAddress == address(0)) revert Distributor__NoZeroAddress();
+        if (factoryAddress == address(0)) revert Distributor__NoZeroAddress();
         FACTORY_ADDRESS = factoryAddress; // initialize with deployed factory address beforehand
-        STADIUM_ADDRESS = stadiumAddress; // official address to receive commission fee
     }
 
     ////////////////////////////////////////////
@@ -106,7 +103,7 @@ contract Distributor {
      * The token address must be one of the whitelisted tokens
      * The winners and percentages array are supposed not to be so long, so the loop can stay unbounded
      * The total percentage must be correct. It must be (100 - COMMITION_FEE).
-     * Finally send the remained token(fee) to STADIUM_ADDRESS with no dust in the contract
+     * Finally send the remained token(fee) to proxyFactory's stadiumAddress with no dust in the contract
      * @param token The token address
      * @param winners The addresses of winners
      * @param percentages The percentages of winners
@@ -149,18 +146,18 @@ contract Distributor {
             revert Distributor__MismatchedPercentages();
         }
 
-        // send commission fee as well as all the remaining tokens to STADIUM_ADDRESS to avoid dust remaining
+        // send commission fee as well as all the remaining tokens to stadiumAddress to avoid dust remaining
         _commissionTransfer(erc20);
         emit Distributed(token, winners, percentages, data);
     }
 
     /**
-     * @notice Transfer commission fee to STADIUM_ADDRESS
+     * @notice Transfer commission fee to stadiumAddress
      * @dev This internal function is called after distribution in `_distribute` function
      * @param token The token address
      */
     function _commissionTransfer(IERC20 token) internal {
-        token.safeTransfer(STADIUM_ADDRESS, token.balanceOf(address(this)));
+        token.safeTransfer(getStadiumAddress(), token.balanceOf(address(this)));
     }
 
     /**
@@ -186,9 +183,17 @@ contract Distributor {
     {
         /* solhint-disable */
         _FACTORY_ADDRESS = FACTORY_ADDRESS;
-        _STADIUM_ADDRESS = STADIUM_ADDRESS;
+        _STADIUM_ADDRESS = getStadiumAddress();
         _COMMISSION_FEE = COMMISSION_FEE;
         _VERSION = VERSION;
         /* solhint-enable */
+    }
+
+    /**
+     * @notice returns stadium address from proxy factory
+     * @dev This function is for convenience to get the stadium address
+     */
+    function getStadiumAddress() internal view returns (address) {
+        return ProxyFactory(FACTORY_ADDRESS).stadiumAddress();
     }
 }

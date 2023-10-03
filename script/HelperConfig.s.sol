@@ -97,7 +97,7 @@ contract HelperConfig is Script {
             jpycv1Address: address(0),
             jpycv2Address: 0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB,
             usdcAddress: 0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E,
-            usdtAddress: 0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7,
+            usdtAddress: address(0),
             deployerKey: vm.envUint("PRIVATE_KEY")
         });
     }
