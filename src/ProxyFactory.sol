@@ -92,7 +92,7 @@ contract ProxyFactory is Ownable, EIP712 {
             if (_whitelistedTokens[i] == address(0)) revert ProxyFactory__NoZeroAddress();
             whitelistedTokens[_whitelistedTokens[i]] = true;
             unchecked {
-                i++;
+                ++i;
             }
         }
     }

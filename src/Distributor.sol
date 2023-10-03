@@ -57,7 +57,7 @@ contract Distributor {
     address private immutable STADIUM_ADDRESS;
     uint256 private constant COMMISSION_FEE = 500; // this can be changed in the future
     // a constant value of 10,000 (basis points) = 100%
-    uint256 private constant BASIS_POINTS = 10000;
+    uint256 private constant BASIS_POINTS = 10_000;
 
     // prize distribution event. data is for logging purpose
     event Distributed(address token, address[] winners, uint256[] percentages, bytes data);
@@ -88,7 +88,7 @@ contract Distributor {
      * @param winners The addresses array of winners
      * @param percentages The percentages array of winners
      */
-    function distribute(address token, address[] memory winners, uint256[] memory percentages, bytes memory data)
+    function distribute(address token, address[] calldata winners, uint256[] calldata percentages, bytes calldata data)
         external
     {
         if (msg.sender != FACTORY_ADDRESS) {
@@ -112,16 +112,16 @@ contract Distributor {
      * @param percentages The percentages of winners
      * @param data The data to be logged. It is supposed to be used for showing the realation bbetween winners and proposals.
      */
-    function _distribute(address token, address[] memory winners, uint256[] memory percentages, bytes memory data)
+    function _distribute(address token, address[] calldata winners, uint256[] calldata percentages, bytes calldata data)
         internal
     {
         // token address input check
-        if (token == address(0)) revert Distributor__NoZeroAddress();
         if (!_isWhiteListed(token)) {
             revert Distributor__InvalidTokenAddress();
         }
         // winners and percentages input check
-        if (winners.length == 0 || winners.length != percentages.length) revert Distributor__MismatchedArrays();
+        uint256 winnersLength = winners.length; // cache length
+        if (winners.length == 0 || winnersLength != percentages.length) revert Distributor__MismatchedArrays();
 
         // prepare for the loop
         IERC20 erc20 = IERC20(token);
@@ -129,22 +129,23 @@ contract Distributor {
         uint256 totalAmount = erc20.balanceOf(address(this));
         // if there is no token to distribute, then revert
         if (totalAmount == 0) revert Distributor__NoTokenToDistribute();
-        
-        // percentages.length = winners length
-        uint256 winnersLength = winners.length; // cache length
+
+        // percentages.length is equal to winners length
         uint256 totalPercentage;
         for (uint256 i; i < winnersLength;) {
-            totalPercentage += percentages[i];
-            uint256 amount = totalAmount * percentages[i] / BASIS_POINTS;
-            if (winners[i] == address(0)) revert Distributor__NoZeroAddress();
-            erc20.safeTransfer(winners[i], amount);
+            uint256 percentage = percentages[i];
+            totalPercentage += percentage;
+            uint256 amount = totalAmount * percentage / BASIS_POINTS;
+            address winner = winners[i];
+            if (winner == address(0)) revert Distributor__NoZeroAddress();
+            erc20.safeTransfer(winner, amount);
             unchecked {
                 ++i;
             }
         }
 
         // check if totalPercentage is correct
-        if (totalPercentage != (10000 - COMMISSION_FEE)) {
+        if (totalPercentage != (BASIS_POINTS - COMMISSION_FEE)) {
             revert Distributor__MismatchedPercentages();
         }
 
