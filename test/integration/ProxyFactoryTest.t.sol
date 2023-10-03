@@ -1415,10 +1415,61 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         proxyFactory.distributeByOwner(proxyAddress, organizer, randomId, address(distributor), dataToSendToAdmin);
     }
 
+    ///////////////////////////
+    ///// getProxyAddress /////
+    ///////////////////////////
+
     function testGetProxyAddressRevertsIfDoesntExist() public {
         bytes32 randomId = keccak256(abi.encode("NotRegistered", "000"));
         bytes32 salt = keccak256(abi.encode(organizer, randomId, address(distributor)));
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
         proxyFactory.getProxyAddress(salt, address(distributor));
+    }
+
+    //////////////////////////
+    ///// stadiumAddress /////
+    //////////////////////////
+
+    function testCanGetStadiumAddress() public {
+        address stadiumAddressGot = proxyFactory.stadiumAddress();
+        assertEq(stadiumAddressGot, stadiumAddress);
+    }
+
+    function testOwnerCanSetStadiumAddress() public {
+        address newStadiumAddress = address(0x123);
+        vm.prank(factoryAdmin);
+        proxyFactory.setStadiumAddress(newStadiumAddress);
+        address stadiumAddressGot = proxyFactory.stadiumAddress();
+        assertEq(stadiumAddressGot, newStadiumAddress);
+    }
+
+    function testNonownerCannotSetStadiumAddress() public {
+        address newStadiumAddress = address(0x123);
+        address newStadiumAddress2 = makeAddr("NEW_STADIUM_ADDRESS");
+        vm.prank(organizer);
+        vm.expectRevert("Ownable: caller is not the owner");
+        proxyFactory.setStadiumAddress(newStadiumAddress);
+        vm.prank(supporter);
+        vm.expectRevert("Ownable: caller is not the owner");
+        proxyFactory.setStadiumAddress(newStadiumAddress2);
+        address stadiumAddressGot = proxyFactory.stadiumAddress();
+        assertEq(stadiumAddressGot, stadiumAddress);
+        assertFalse(stadiumAddressGot == newStadiumAddress);
+    }
+
+    function testIfStadiumAddressIsSetAsZeroInConstructorThenRevert() public {
+        address zeroStadiumAddress = address(0x0);
+        (, jpycv2Address, usdcAddress,,) = config.activeNetworkConfig();
+        address[] memory tokensToWhitelist = new address[](2);
+        // whitelist 3 kinds of tokens
+        tokensToWhitelist[0] = jpycv2Address;
+        tokensToWhitelist[1] = usdcAddress;
+        for (uint256 i; i < tokensToWhitelist.length; ++i) {
+            if (tokensToWhitelist[i] != address(0)) {
+                finalTokensToWhitelist.push(tokensToWhitelist[i]);
+            }
+        }
+        vm.expectRevert(ProxyFactory.ProxyFactory__NoZeroAddress.selector);
+        new ProxyFactory(finalTokensToWhitelist, zeroStadiumAddress);
     }
 }

@@ -90,6 +90,7 @@ contract ProxyFactory is Ownable, EIP712 {
      */
     constructor(address[] memory _whitelistedTokens, address _stadiumAddress) EIP712("ProxyFactory", "1") Ownable() {
         if (_whitelistedTokens.length == 0) revert ProxyFactory__NoEmptyArray();
+        if (_stadiumAddress == address(0)) revert ProxyFactory__NoZeroAddress();
         for (uint256 i; i < _whitelistedTokens.length;) {
             if (_whitelistedTokens[i] == address(0)) revert ProxyFactory__NoZeroAddress();
             whitelistedTokens[_whitelistedTokens[i]] = true;

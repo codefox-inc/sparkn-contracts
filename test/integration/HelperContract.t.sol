@@ -18,6 +18,7 @@ abstract contract HelperContract is Test {
     ProxyFactory public proxyFactory;
     Proxy public proxy;
     Distributor public distributor;
+    address[] public finalTokensToWhitelist;
 
     // distributor instance through proxy address
     Distributor public proxyWithDistributorLogic;
