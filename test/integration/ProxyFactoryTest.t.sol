@@ -789,7 +789,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
         bytes memory sendingData = createData();
         bytes32 data =
-            keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, randomId_, address(distributor), sendingData));
+            keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, randomId_, address(distributor), keccak256(sendingData)));
         bytes32 digest = ECDSA.toTypedDataHash(domainSeparatorV4, data);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateK, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
@@ -1355,7 +1355,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
         bytes memory sendingData = createDataIncludesZeroAddress();
         bytes32 data =
-            keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, randomId_, address(distributor), sendingData));
+            keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, randomId_, address(distributor), keccak256(sendingData)));
         bytes32 digest = ECDSA.toTypedDataHash(domainSeparatorV4, data);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateK, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
@@ -1378,7 +1378,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
 
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
         vm.warp(8.01 days);
-        // it won't succeeds
+        // it won't succeed
         vm.expectRevert(ProxyFactory.ProxyFactory__DelegateCallFailed.selector);
         proxyFactory.deployProxyAndDistributeBySignature(
             TEST_SIGNER, randomId, address(distributor), signature, sendingData

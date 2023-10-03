@@ -165,8 +165,9 @@ contract ProxyFactory is Ownable, EIP712 {
         bytes calldata signature,
         bytes calldata data
     ) public returns (address) {
-        bytes32 digest =
-            _hashTypedDataV4(keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, contestId, implementation, data)));
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, contestId, implementation, keccak256(data)))
+        );
         if (!organizer.isValidSignatureNow(digest, signature)) revert ProxyFactory__InvalidSignature();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
