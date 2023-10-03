@@ -51,7 +51,6 @@ contract ProxyFactory is Ownable, EIP712 {
     error ProxyFactory__ContestIsNotExpired();
     error ProxyFactory__ProxyAddressCannotBeZero();
     error ProxyFactory__ImplementationNotDeployed();
-    error ProxyFactory__ProxyAddressMismatch();
     error ProxyFactory__DelegateCallFailed();
     error ProxyFactory__ProxyIsNotAContract();
 
@@ -95,7 +94,7 @@ contract ProxyFactory is Ownable, EIP712 {
             if (_whitelistedTokens[i] == address(0)) revert ProxyFactory__NoZeroAddress();
             whitelistedTokens[_whitelistedTokens[i]] = true;
             unchecked {
-                i++;
+                ++i;
             }
         }
         stadiumAddress = _stadiumAddress;
@@ -169,8 +168,9 @@ contract ProxyFactory is Ownable, EIP712 {
         bytes calldata signature,
         bytes calldata data
     ) public returns (address) {
-        bytes32 digest =
-            _hashTypedDataV4(keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, contestId, implementation, data)));
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(abi.encode(_DEPLOY_AND_DISTRIBUTE_TYPEHASH, contestId, implementation, keccak256(data)))
+        );
         if (!organizer.isValidSignatureNow(digest, signature)) revert ProxyFactory__InvalidSignature();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
         if (saltToCloseTime[salt] == 0) revert ProxyFactory__ContestIsNotRegistered();
@@ -208,26 +208,22 @@ contract ProxyFactory is Ownable, EIP712 {
      * @notice Owner can rescue funds if token is stuck after the deployment and contest is over for a while
      * @dev only owner can call this function and it is supposed not to be called often
      * @dev fee sent to stadium address is included in the logic contract
-     * @param proxy The proxy address
      * @param organizer The contest organizer
      * @param contestId The contest id
      * @param implementation The implementation address
      * @param data The prize distribution calling data
      */
     function distributeByOwner(
-        address proxy,
         address organizer,
         bytes32 contestId,
         address implementation,
         bytes calldata data
     ) public onlyOwner {
-        if (proxy == address(0)) revert ProxyFactory__ProxyAddressCannotBeZero();
         bytes32 salt = _calculateSalt(organizer, contestId, implementation);
-        if (proxy != getProxyAddress(salt, implementation)) {
-            revert ProxyFactory__ProxyAddressMismatch();
-        }
         // distribute only when it exists and expired
         if (saltToCloseTime[salt] + EXPIRATION_TIME > block.timestamp) revert ProxyFactory__ContestIsNotExpired();
+        address proxy = getProxyAddress(salt, implementation);
+        if (proxy.code.length == 0) revert ProxyFactory__ProxyIsNotAContract();
         _distribute(proxy, data);
     }
 
@@ -274,7 +270,6 @@ contract ProxyFactory is Ownable, EIP712 {
     /// @param proxy The proxy address
     /// @param data The prize distribution data
     function _distribute(address proxy, bytes calldata data) internal {
-        if (proxy.code.length == 0) revert ProxyFactory__ProxyIsNotAContract();
         (bool success,) = proxy.call(data);
         if (!success) revert ProxyFactory__DelegateCallFailed();
         emit Distributed(proxy, data);

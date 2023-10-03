@@ -152,7 +152,7 @@ contract ProxyTest is StdCheats, HelperContract {
 
         // factory wants to call distribute function but with address zero
         vm.startPrank(address(proxyFactory));
-        vm.expectRevert(Distributor.Distributor__NoZeroAddress.selector);
+        vm.expectRevert(Distributor.Distributor__InvalidTokenAddress.selector);
         proxyWithDistributorLogic.distribute(address(0), winners, percentages_, "");
         vm.stopPrank();
     }
