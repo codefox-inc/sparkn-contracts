@@ -218,6 +218,7 @@ contract ProxyFactory is Ownable, EIP712 {
         // distribute only when it exists and expired
         if (saltToCloseTime[salt] + EXPIRATION_TIME > block.timestamp) revert ProxyFactory__ContestIsNotExpired();
         address proxy = getProxyAddress(salt, implementation);
+        if (proxy.code.length == 0) revert ProxyFactory__ProxyIsNotAContract();
         _distribute(proxy, data);
     }
 
@@ -253,7 +254,6 @@ contract ProxyFactory is Ownable, EIP712 {
     /// @param proxy The proxy address
     /// @param data The prize distribution data
     function _distribute(address proxy, bytes calldata data) internal {
-        if (proxy.code.length == 0) revert ProxyFactory__ProxyIsNotAContract();
         (bool success,) = proxy.call(data);
         if (!success) revert ProxyFactory__DelegateCallFailed();
         emit Distributed(proxy, data);
