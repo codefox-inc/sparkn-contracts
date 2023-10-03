@@ -12,7 +12,7 @@ import {Distributor} from "../../src/Distributor.sol";
 import {HelperContract} from "../integration/HelperContract.t.sol";
 
 contract FuzzTestProxyFactory is StdCheats, HelperContract {
-    bytes32 constant public SOMEID = keccak256(abi.encode("Jason", "001"));
+    bytes32 public constant SOMEID = keccak256(abi.encode("Jason", "001"));
 
     function setUp() public {
         // set up balances of each token belongs to each user
@@ -399,7 +399,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.warp(16 days);
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.distributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        proxyFactory.distributeByOwner(organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -430,7 +430,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.warp(8.01 days);
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.distributeByOwner(proxyAddress, organizer, SOMEID, randomImple, dataToSendToAdmin);
+        proxyFactory.distributeByOwner(organizer, SOMEID, randomImple, dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -462,7 +462,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.warp(8.01 days);
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotRegistered.selector);
-        proxyFactory.distributeByOwner(proxyAddress, randomUsr, SOMEID, address(distributor), dataToSendToAdmin);
+        proxyFactory.distributeByOwner(randomUsr, SOMEID, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -492,7 +492,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.warp(randomTime);
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__ContestIsNotExpired.selector);
-        proxyFactory.distributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        proxyFactory.distributeByOwner(organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -523,7 +523,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         vm.warp(16 days);
         vm.startPrank(randomUsr);
         vm.expectRevert("Ownable: caller is not the owner");
-        proxyFactory.distributeByOwner(proxyAddress, organizer, randomId_, address(distributor), dataToSendToAdmin);
+        proxyFactory.distributeByOwner(organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
     }
 
@@ -561,9 +561,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
         bytes memory dataToSendToAdmin = createDataToSendToAdmin();
         vm.startPrank(factoryAdmin);
-        proxyFactory.distributeByOwner(
-            calculatedProxyAddress, organizer, SOMEID, address(distributor), dataToSendToAdmin
-        );
+        proxyFactory.distributeByOwner(organizer, SOMEID, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
 
         // after
