@@ -54,7 +54,6 @@ contract Distributor {
     /* solhint-disable */
     uint8 private constant VERSION = 1; // version is 1 for now
     address private immutable FACTORY_ADDRESS;
-    address private immutable STADIUM_ADDRESS;
     uint256 private constant COMMISSION_FEE = 500; // this can be changed in the future
     // a constant value of 10,000 (basis points) = 100%
     uint256 private constant BASIS_POINTS = 10000;
@@ -68,14 +67,12 @@ contract Distributor {
     /// @dev initiate the contract with factory address and other key addresses, fee rate
     constructor(
         // uint256 version, // for future use
-        address factoryAddress,
-        address stadiumAddress
+        address factoryAddress
     ) 
     /* solhint-enable */
     {
-        if (factoryAddress == address(0) || stadiumAddress == address(0)) revert Distributor__NoZeroAddress();
+        if (factoryAddress == address(0)) revert Distributor__NoZeroAddress();
         FACTORY_ADDRESS = factoryAddress; // initialize with deployed factory address beforehand
-        STADIUM_ADDRESS = stadiumAddress; // official address to receive commission fee
     }
 
     ////////////////////////////////////////////
@@ -129,7 +126,7 @@ contract Distributor {
         uint256 totalAmount = erc20.balanceOf(address(this));
         // if there is no token to distribute, then revert
         if (totalAmount == 0) revert Distributor__NoTokenToDistribute();
-        
+
         // percentages.length = winners length
         uint256 winnersLength = winners.length; // cache length
         uint256 totalPercentage;
@@ -159,7 +156,7 @@ contract Distributor {
      * @param token The token address
      */
     function _commissionTransfer(IERC20 token) internal {
-        token.safeTransfer(STADIUM_ADDRESS, token.balanceOf(address(this)));
+        token.safeTransfer(getStadiumAddress(), token.balanceOf(address(this)));
     }
 
     /**
@@ -185,9 +182,17 @@ contract Distributor {
     {
         /* solhint-disable */
         _FACTORY_ADDRESS = FACTORY_ADDRESS;
-        _STADIUM_ADDRESS = STADIUM_ADDRESS;
+        _STADIUM_ADDRESS = getStadiumAddress();
         _COMMISSION_FEE = COMMISSION_FEE;
         _VERSION = VERSION;
         /* solhint-enable */
+    }
+
+    /**
+     * @notice returns stadium address from proxy factory
+     * @dev This function is for convenience to get the stadium address
+     */
+    function getStadiumAddress() internal view returns (address) {
+        return ProxyFactory(FACTORY_ADDRESS).stadiumAddress();
     }
 }

@@ -41,7 +41,7 @@ contract DeployContracts is Script {
 
         vm.startBroadcast(deployerKey); // prank
         // console.log("Deploying contracts...sender: ", msg.sender);
-        ProxyFactory proxyFactory = new ProxyFactory(finalTokensToWhitelist);
+        ProxyFactory proxyFactory = new ProxyFactory(finalTokensToWhitelist, stadiumAddress);
         // console.log("proxyFactory Owner: %s", proxyFactory.owner());
         // console.log("address this: %s", address(this));
         // console.log("address deployerKey: %s", deployerKey);
@@ -51,7 +51,7 @@ contract DeployContracts is Script {
 
         // deploy distributor - implementation contract
         // 5% as starting fee
-        Distributor distributor = new Distributor(address(proxyFactory), stadiumAddress);
+        Distributor distributor = new Distributor(address(proxyFactory));
         // no need to deploy proxies in the beginning
         // Proxy proxyA = proxyFactory.deployProxy(address(distributor));
         // Proxy proxyB = proxyFactory.deployProxy(address(distributor));

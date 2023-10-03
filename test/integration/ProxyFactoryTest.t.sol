@@ -116,7 +116,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         address[] memory tokensToWhitelist = new address[](0);
         // should revert
         vm.expectRevert(ProxyFactory.ProxyFactory__NoEmptyArray.selector);
-        new ProxyFactory(tokensToWhitelist);
+        new ProxyFactory(tokensToWhitelist, stadiumAddress);
     }
 
     function testConstructorWhitelistedTokensWithZeroAddressesThenRevert() public {
@@ -125,7 +125,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         address[] memory tokensToWhitelist = new address[](2);
         // should revert
         vm.expectRevert(ProxyFactory.ProxyFactory__NoZeroAddress.selector);
-        new ProxyFactory(tokensToWhitelist);
+        new ProxyFactory(tokensToWhitelist, stadiumAddress);
     }
 
     function testConstructorVariablesAreSetCorrectly() public {
@@ -136,7 +136,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         tokensToWhitelist[1] = jpycv2Address;
         tokensToWhitelist[2] = usdcAddress;
         // deploy contracts
-        ProxyFactory newProxyFactory = new ProxyFactory(tokensToWhitelist);
+        ProxyFactory newProxyFactory = new ProxyFactory(tokensToWhitelist, stadiumAddress);
         // check whitelist
         assertTrue(newProxyFactory.whitelistedTokens(jpycv1Address));
         assertTrue(newProxyFactory.whitelistedTokens(jpycv2Address));
@@ -1217,7 +1217,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         //
         // 4. For some reason there is a new distributor implementation.
         // The Owner set the new distributor for the same contestId
-        Distributor newDistributor = new Distributor(address(proxyFactory), stadiumAddress);
+        Distributor newDistributor = new Distributor(address(proxyFactory));
         vm.startPrank(factoryAdmin);
         proxyFactory.setContest(organizer, contestId, block.timestamp + 8 days, address(newDistributor));
         vm.stopPrank();
