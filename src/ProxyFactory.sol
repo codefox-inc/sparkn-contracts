@@ -243,16 +243,16 @@ contract ProxyFactory is Ownable, EIP712 {
         proxy = address(uint160(uint256(hash)));
     }
 
-
-   /**
-    * @notice Only owner can set stadium address
-    * @dev Set stadium address
-    * @param newStadiumAddress The new stadium address
-    */
-   function setStadiumAddress(address newStadiumAddress) public onlyOwner {
-       stadiumAddress = newStadiumAddress;
-       emit SetStadiumAddress(newStadiumAddress);
-   }
+    /**
+     * @notice Only owner can set stadium address
+     * @dev Set stadium address
+     * @param newStadiumAddress The new stadium address
+     */
+    function setStadiumAddress(address newStadiumAddress) public onlyOwner {
+        if (newStadiumAddress == address(0)) revert ProxyFactory__NoZeroAddress();
+        stadiumAddress = newStadiumAddress;
+        emit SetStadiumAddress(newStadiumAddress);
+    }
 
     ///////////////////////////////////
     /////// Internal functions ////////
