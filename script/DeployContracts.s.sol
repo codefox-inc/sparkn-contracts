@@ -66,7 +66,13 @@ contract DeployContracts is Script {
         // console.log("address this: %s", address(this));
         // console.log("address deployerKey: %s", deployerKey);
         // console.log("address factoryAdmin: %s", factoryAdmin);
-        proxyFactory.transferOwnership(factoryAdmin);
+        
+        // do this when it is in local test
+        // TODO: now the prod cases only include testnet and mainnet of avalanche
+        if (block.chainid != 43114 || block.chainid != 43113) {
+            // console.log("Deploying contracts...sender: ", msg.sender);
+            proxyFactory.transferOwnership(factoryAdmin);
+        }
         // console.log("After transferring, proxyFactory Owner: %s", proxyFactory.owner());
 
         // deploy distributor - implementation contract
