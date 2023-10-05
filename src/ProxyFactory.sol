@@ -70,7 +70,7 @@ contract ProxyFactory is Ownable, EIP712 {
     bytes32 internal constant _DEPLOY_AND_DISTRIBUTE_TYPEHASH =
         keccak256("DeployAndDistribute(bytes32 contestId,address implementation,bytes data)");
     uint256 public constant EXPIRATION_TIME = 7 days;
-    uint256 public constant MAX_CONTEST_PERIOD = 29 days;
+    uint256 public constant MAX_CONTEST_PERIOD = 60 days;
     address public stadiumAddress; // official address to receive commission fee
 
     /// @notice record contest close time by salt
