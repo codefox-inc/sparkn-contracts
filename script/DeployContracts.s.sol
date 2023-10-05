@@ -24,7 +24,7 @@ contract DeployContracts is Script {
     function run() external returns (ProxyFactory, Distributor, HelperConfig) {
         // set up config
         HelperConfig config = new HelperConfig();
-        if (block.chainid == 43114) {
+        if (block.chainid == 43114 || block.chainid == 43113) {
             // get the addresses of the tokens to whitelist
             (,jpycv2Address, usdcAddress,, deployerKey) =
                 config.activeNetworkConfig();
@@ -69,7 +69,7 @@ contract DeployContracts is Script {
         
         // do this when it is in local test
         // TODO: now the prod cases only include testnet and mainnet of avalanche
-        if (block.chainid != 43114 || block.chainid != 43113) {
+        if (block.chainid != 43114 && block.chainid != 43113) {
             // console.log("Deploying contracts...sender: ", msg.sender);
             proxyFactory.transferOwnership(factoryAdmin);
         }
