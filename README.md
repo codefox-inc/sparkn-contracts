@@ -232,6 +232,10 @@ Format the codes
 make format
 ```
 
+# Audit Report
+
+-   [Audit Report by CodeHawks](./audit/auditReportByCodeHawks.md)
+
 # Reference
 
 -   [Foundry Book](https://book.getfoundry.sh/)
