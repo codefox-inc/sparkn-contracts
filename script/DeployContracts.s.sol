@@ -16,7 +16,7 @@ contract DeployContracts is Script {
     // tokens' array to whitelist
     // satadium_address = 0x5aB0ffF1a51ee78F67247ac0B90C8c1f1f54c37F
     address[] public finalTokensToWhitelist;
-    address public avalancheStadiumAddress = vm.envAddress("MAINNET_STADIUM_ADDRESS"); // SPARKN STADDIUM
+    address public avalancheStadiumAddress = vm.envAddress("AVALANCHE_STADIUM_ADDRESS"); // SPARKN STADDIUM
     address public stadiumAddress = vm.envAddress("STADIUM_ADDRESS"); // SPARKN STADDIUM
     address public factoryAdmin = vm.envAddress("SPARKN_DEV"); // SPARKN DEV
     address public jpycv1Address;
@@ -29,7 +29,7 @@ contract DeployContracts is Script {
         // set up config
         HelperConfig config = new HelperConfig();
         if (block.chainid == 43114 || block.chainid == 43113) {
-            // get the addresses of the tokens to whitelist
+            // get the addresses of jpycv2 and usdc to whitelist
             (,jpycv2Address, usdcAddress,, deployerKey) =
                 config.activeNetworkConfig();
             address[] memory tokensToWhitelist = new address[](2);
@@ -64,10 +64,11 @@ contract DeployContracts is Script {
         // console.log("deployerKey: %s", deployerKey);
 
         vm.startBroadcast(deployerKey); // prank
-        // console.log("Deploying contracts...sender: ", msg.sender);
+        // do this when it is on avalanche 
         if (block.chainid == 43114 ) {
             proxyFactory = new ProxyFactory(finalTokensToWhitelist, avalancheStadiumAddress);
         } else {
+        // do this when it is not on avalanche 
             proxyFactory = new ProxyFactory(finalTokensToWhitelist, stadiumAddress);
         }
         // console.log("proxyFactory Owner: %s", proxyFactory.owner());
