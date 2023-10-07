@@ -10,15 +10,19 @@ import {ProxyFactory} from "../src/ProxyFactory.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract DeployContracts is Script {
+    // contract instance
+    ProxyFactory public proxyFactory;
+    
     // tokens' array to whitelist
     // satadium_address = 0x5aB0ffF1a51ee78F67247ac0B90C8c1f1f54c37F
     address[] public finalTokensToWhitelist;
+    address public avalancheStadiumAddress = vm.envAddress("MAINNET_STADIUM_ADDRESS"); // SPARKN STADDIUM
     address public stadiumAddress = vm.envAddress("STADIUM_ADDRESS"); // SPARKN STADDIUM
     address public factoryAdmin = vm.envAddress("SPARKN_DEV"); // SPARKN DEV
     address public jpycv1Address;
     address public jpycv2Address;
     address public usdcAddress;
-    address public usdtAddress;
+    // address public usdtAddress;
     uint256 public deployerKey;
 
     function run() external returns (ProxyFactory, Distributor, HelperConfig) {
@@ -61,7 +65,11 @@ contract DeployContracts is Script {
 
         vm.startBroadcast(deployerKey); // prank
         // console.log("Deploying contracts...sender: ", msg.sender);
-        ProxyFactory proxyFactory = new ProxyFactory(finalTokensToWhitelist, stadiumAddress);
+        if (block.chainid == 43114 ) {
+            proxyFactory = new ProxyFactory(finalTokensToWhitelist, avalancheStadiumAddress);
+        } else {
+            proxyFactory = new ProxyFactory(finalTokensToWhitelist, stadiumAddress);
+        }
         // console.log("proxyFactory Owner: %s", proxyFactory.owner());
         // console.log("address this: %s", address(this));
         // console.log("address deployerKey: %s", deployerKey);
@@ -76,12 +84,9 @@ contract DeployContracts is Script {
         // console.log("After transferring, proxyFactory Owner: %s", proxyFactory.owner());
 
         // deploy distributor - implementation contract
-        // 5% as starting fee
+        // 5% as starting fee as constant value
         Distributor distributor = new Distributor(address(proxyFactory));
-        // no need to deploy proxies in the beginning
-        // Proxy proxyA = proxyFactory.deployProxy(address(distributor));
-        // Proxy proxyB = proxyFactory.deployProxy(address(distributor));
-        // Proxy proxyC= proxyFactory.deployProxy(address(distributor));
+
         vm.stopBroadcast();
 
         return (proxyFactory, distributor, config);

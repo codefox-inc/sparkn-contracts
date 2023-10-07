@@ -42,6 +42,10 @@ ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
 endif
 
 ifeq ($(findstring --network avalanchefuji,$(ARGS)),--network avalanchefuji)
+	NETWORK_ARGS := --rpc-url $(AVALANCHEFUJI_RPC_URL) --private-key $(PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(SNOWTRACE_API_KEY) -vvvv
+endif
+
+ifeq ($(findstring --network avalanchemainnnet,$(ARGS)),--network avalanchemainnnet)
 	NETWORK_ARGS := --rpc-url $(AVALANCHE_RPC_URL) --private-key $(PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(SNOWTRACE_API_KEY) -vvvv
 endif
 
