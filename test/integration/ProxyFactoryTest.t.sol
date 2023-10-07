@@ -104,7 +104,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
     /////////////////////
     function testConstantValuesAreSetCorrectly() public {
         assertEq(proxyFactory.EXPIRATION_TIME(), 7 days);
-        assertEq(proxyFactory.MAX_CONTEST_PERIOD(), 28 days);
+        assertEq(proxyFactory.MAX_CONTEST_PERIOD(), 60 days);
     }
 
     /////////////////
@@ -195,7 +195,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         bytes32 randomId = keccak256(abi.encode("Jason", "001"));
         vm.startPrank(factoryAdmin);
         vm.expectRevert(ProxyFactory.ProxyFactory__CloseTimeNotInRange.selector);
-        proxyFactory.setContest(organizer, randomId, block.timestamp + 29 days, address(distributor));
+        proxyFactory.setContest(organizer, randomId, block.timestamp + 61 days, address(distributor));
         // console.log(bytes32(0x01));
         vm.stopPrank();
     }
