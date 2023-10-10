@@ -132,7 +132,7 @@ contract Distributor {
         for (uint256 i; i < winnersLength;) {
             uint256 percentage = percentages[i];
             totalPercentage += percentage;
-            uint256 amount = totalAmount * percentage / BASIS_POINTS;
+            uint256 amount = totalAmount * percentage / (BASIS_POINTS + COMMISSION_FEE);
             address winner = winners[i];
             if (winner == address(0)) revert Distributor__NoZeroAddress();
             erc20.safeTransfer(winner, amount);
@@ -142,7 +142,7 @@ contract Distributor {
         }
 
         // check if totalPercentage is correct
-        if (totalPercentage != (BASIS_POINTS - COMMISSION_FEE)) {
+        if (totalPercentage != BASIS_POINTS) {
             revert Distributor__MismatchedPercentages();
         }
 
