@@ -1,0 +1,130 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "factoryAddress",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "Distributor__InvalidTokenAddress",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "Distributor__MismatchedArrays",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "Distributor__MismatchedPercentages",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "Distributor__NoTokenToDistribute",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "Distributor__NoZeroAddress",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "Distributor__OnlyFactoryAddressIsAllowed",
+        "type": "error"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "address[]",
+                "name": "winners",
+                "type": "address[]"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256[]",
+                "name": "percentages",
+                "type": "uint256[]"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "Distributed",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+            },
+            {
+                "internalType": "address[]",
+                "name": "winners",
+                "type": "address[]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "percentages",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "distribute",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getConstants",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "_FACTORY_ADDRESS",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_STADIUM_ADDRESS",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_COMMISSION_FEE",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint8",
+                "name": "_VERSION",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
