@@ -149,7 +149,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         winners[1] = user2;
         uint256[] memory percentages_ = new uint256[](2);
         percentages_[0] = user1Percentage;
-        percentages_[1] = 9500 - user1Percentage;
+        percentages_[1] = 10000 - user1Percentage;
         data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_, "");
     }
 
@@ -159,7 +159,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
         address[] memory winners = new address[](1);
         winners[0] = stadiumAddress;
         uint256[] memory percentages_ = new uint256[](1);
-        percentages_[0] = 9500;
+        percentages_[0] = 10000;
         data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_, "");
     }
 
@@ -249,14 +249,14 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
     function testFuzzSucceedsWhenConditionsMetWithRandomPercetages(uint256 randomNum)
         public
-        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10500 ether, block.timestamp + 1 days)
     {
         // before
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(user2), 0 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
         // bounded random number
-        uint256 randomNum_ = bound(randomNum, 0, 9500);
+        uint256 randomNum_ = bound(randomNum, 0, 10000);
         // vm.assume(randomNum <= 9500);
         bytes32 someId = keccak256(abi.encode("Jason", "001"));
         bytes memory data = createData(randomNum_);
@@ -267,7 +267,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
         // after
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), randomNum_ * 1e18);
-        assertEq(MockERC20(jpycv2Address).balanceOf(user2), 9500 * 1e18 - randomNum_ * 1e18);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user2), 10000 * 1e18 - randomNum_ * 1e18);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
 
@@ -350,14 +350,14 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
     function testFuzzSucceedsIfAllConditionsMetWithRandomPercentages(uint256 randomNum)
         public
-        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10500 ether, block.timestamp + 1 days)
     {
         // before
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(user2), 0 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
         // bounded random number
-        uint256 randomNum_ = bound(randomNum, 0, 9500);
+        uint256 randomNum_ = bound(randomNum, 0, 10000);
 
         bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
         bytes memory data = createData(randomNum_);
@@ -369,7 +369,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
         // after
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), randomNum_ * 1e18);
-        assertEq(MockERC20(jpycv2Address).balanceOf(user2), (9500 - randomNum_) * 1e18);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user2), (10000 - randomNum_) * 1e18);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
 
@@ -498,7 +498,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
     function testFuzzRevertsIfCalledByNonOwnerDistributeByOwner(address randomUsr)
         public
-        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10500 ether, block.timestamp + 1 days)
     {
         // prepare for data
         bytes32 randomId_ = keccak256(abi.encode("Jason", "001"));
@@ -515,7 +515,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
         // sponsor send token to proxy by mistake
         vm.startPrank(sponsor);
-        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10500 ether);
         vm.stopPrank();
         // create data to send the token to admin
         bytes memory dataToSendToAdmin = createDataToSendToAdmin();
@@ -529,15 +529,15 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
     function testFuzzSucceedIfAllConditionsMetDistributeByOwner(uint256 randomNum)
         public
-        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10000 ether, block.timestamp + 1 days)
+        setUpContestForJasonAndSentJpycv2Token(organizer, jpycv2Address, 10500 ether, block.timestamp + 1 days)
     {
         // before
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(user2), 0 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
 
-        // assume randomNum is in range of 0 ~ 9500
-        uint256 randomNum_ = bound(randomNum, 0, 9500);
+        // assume randomNum is in range of 0 ~ 10000
+        uint256 randomNum_ = bound(randomNum, 0, 10000);
 
         // prepare for data
         bytes32 salt_ = keccak256(abi.encode(organizer, SOMEID, address(distributor)));
@@ -556,7 +556,7 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
         // sponsor send token to proxy by mistake
         vm.startPrank(sponsor);
-        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10500 ether);
         vm.stopPrank();
 
         bytes memory dataToSendToAdmin = createDataToSendToAdmin();
@@ -566,8 +566,8 @@ contract FuzzTestProxyFactory is StdCheats, HelperContract {
 
         // after
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), randomNum_ * 1e18);
-        assertEq(MockERC20(jpycv2Address).balanceOf(user2), (9500 - randomNum_) * 1e18);
-        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 10500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user2), (10000 - randomNum_) * 1e18);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 11000 ether);
         // stadiumAddress get 500 ether from sponsor and then get all the token sent from sponsor by mistake.
     }
 }

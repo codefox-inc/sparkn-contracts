@@ -244,10 +244,10 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         bytes32 salt = keccak256(abi.encode(_organizer, randomId, address(distributor)));
         address proxyAddress = proxyFactory.getProxyAddress(salt, address(distributor));
         vm.startPrank(sponsor);
-        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10500 ether);
         vm.stopPrank();
         // console.log(MockERC20(jpycv2Address).balanceOf(proxyAddress));
-        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress), 10000 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress), 10500 ether);
         _;
     }
 
@@ -257,7 +257,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         address[] memory winners = new address[](1);
         winners[0] = user1;
         uint256[] memory percentages_ = new uint256[](1);
-        percentages_[0] = 9500;
+        percentages_[0] = 10000;
         data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_, "");
     }
 
@@ -267,7 +267,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         address[] memory winners = new address[](1);
         winners[0] = stadiumAddress;
         uint256[] memory percentages_ = new uint256[](1);
-        percentages_[0] = 9500;
+        percentages_[0] = 10000;
         data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners, percentages_, "");
     }
 
@@ -335,7 +335,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         address[] memory winners = new address[](1);
         winners[0] = user1;
         uint256[] memory percentages_ = new uint256[](1);
-        percentages_[0] = 9500;
+        percentages_[0] = 10000;
         // lack key arguments
         bytes memory data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, randomId_, winners);
         // console.log(proxyFactory.saltToCloseTime(keccak256(abi.encode(organizer, randomId_, usdcAddress))));
@@ -364,7 +364,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.stopPrank();
 
         // after
-        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 10000 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
 
@@ -436,7 +436,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         address[] memory winners = new address[](1);
         winners[0] = user1;
         uint256[] memory percentages_ = new uint256[](1);
-        percentages_[0] = 9500;
+        percentages_[0] = 10000;
         bytes memory data = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners);
 
         vm.warp(16 days);
@@ -460,7 +460,8 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.stopPrank();
 
         // after
-        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        console.log(MockERC20(jpycv2Address).balanceOf(user1));
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 10000 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
 
@@ -610,7 +611,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         address[] memory winners = new address[](1);
         winners[0] = stadiumAddress;
         uint256[] memory percentages_ = new uint256[](1);
-        percentages_[0] = 9500;
+        percentages_[0] = 10000;
         bytes memory dataToSendToAdmin = abi.encodeWithSelector(Distributor.distribute.selector, jpycv2Address, winners);
 
         // 16 days passed
@@ -686,7 +687,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.stopPrank();
 
         // after
-        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 10000 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 10500 ether);
         // stadiumAddress get 500 ether from sponsor and then get all the token sent from sponsor by mistake.
     }
@@ -719,7 +720,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
 
         // sponsor send token to proxy by mistake
         vm.startPrank(sponsor);
-        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10500 ether);
         vm.stopPrank();
 
         bytes memory dataToSendToAdmin = createDataToSendToAdmin();
@@ -729,8 +730,8 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.stopPrank();
 
         // after
-        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
-        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 10500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 10000 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 11000 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress), 0 ether);
         // stadiumAddress get 500 ether from sponsor and then get all the token sent from sponsor by mistake.
 
@@ -739,7 +740,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         proxyFactory.distributeByOwner(organizer, randomId_, address(distributor), dataToSendToAdmin);
         vm.stopPrank();
 
-        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 10500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 11000 ether);
     }
 
     ///////////////////////////////////////////
@@ -915,7 +916,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         );
 
         // after
-        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 10000 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
 
@@ -1150,7 +1151,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         assertTrue(proxyAddress != address(0), "Proxy deployment failed");
 
         // after
-        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 10000 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
     }
 
@@ -1167,24 +1168,24 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         bytes32 salt = keccak256(abi.encode(organizer, contestId, address(distributor)));
         address proxyAddress = proxyFactory.getProxyAddress(salt, address(distributor));
         vm.startPrank(sponsor);
-        MockERC20(jpycv2Address).transfer(proxyAddress, 10000 ether);
+        MockERC20(jpycv2Address).transfer(proxyAddress, 10500 ether);
         vm.stopPrank();
-        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress), 10000 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress), 10500 ether);
         // before
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether);
-        //
+        
         // 2. Organizer creates a signature
         (bytes32 digest, bytes memory sendingData, bytes memory signature) = createSignatureByASigner(TEST_SIGNER_KEY);
         assertEq(ECDSA.recover(digest, signature), TEST_SIGNER);
         vm.warp(8.01 days);
-        //
+        
         // 3. Caller distributes prizes using the signature
         proxyFactory.deployProxyAndDistributeBySignature(
             TEST_SIGNER, contestId, address(distributor), signature, sendingData
         );
         // after
-        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9500 ether);
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 10000 ether);
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 500 ether);
         //
         // 4. For some reason there is a new distributor implementation.
@@ -1198,14 +1199,14 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         vm.startPrank(sponsor);
         MockERC20(jpycv2Address).transfer(proxyNewDistributorAddress, 10000 ether);
         vm.stopPrank();
-        //
+        
         // 5. The caller can distribute prizes using the same signature in different distributor implementation
         vm.warp(20 days);
         vm.expectRevert(ProxyFactory.ProxyFactory__InvalidSignature.selector);
         proxyFactory.deployProxyAndDistributeBySignature(
             TEST_SIGNER, contestId, address(newDistributor), signature, sendingData
         );
-        assertFalse(MockERC20(jpycv2Address).balanceOf(user1) == 19000 ether);
+        assertFalse(MockERC20(jpycv2Address).balanceOf(user1) == 20000 ether);
     }
 
     // special poc test case
@@ -1227,15 +1228,15 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
 
         vm.startPrank(sponsor);
         // sponsor funds both his contests
-        MockERC20(jpycv2Address).transfer(proxyAddress_1, 10000 ether);
-        MockERC20(jpycv2Address).transfer(proxyAddress_2, 500 ether);
+        MockERC20(jpycv2Address).transfer(proxyAddress_1, 10500 ether);
+        MockERC20(jpycv2Address).transfer(proxyAddress_2, 525 ether);
         vm.stopPrank();
 
         // before
         assertEq(MockERC20(jpycv2Address).balanceOf(user1), 0 ether, "user1 balance not zero");
         assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 0 ether, "STADIUM balance not zero");
-        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_1), 10000 ether, "proxy1 balance not 10000e18");
-        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_2), 500 ether, "proxy2 balance not 500e18");
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_1), 10500 ether, "proxy1 balance not 10000e18");
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_2), 525 ether, "proxy2 balance not 500e18");
 
         bytes memory data = createData();
 
@@ -1246,7 +1247,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         proxyFactory.deployProxyAndDistribute(randomId_1, address(distributor), data);
         // sponsor send token to proxy by mistake
         vm.prank(sponsor);
-        MockERC20(jpycv2Address).transfer(proxyAddress_1, 10000 ether);
+        MockERC20(jpycv2Address).transfer(proxyAddress_1, 10500 ether);
         // 11 days later, organizer deploy and distribute -- for contest_2
         vm.warp(11 days);
         vm.prank(organizer);
@@ -1254,7 +1255,7 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
         proxyFactory.deployProxyAndDistribute(randomId_2, address(distributor), data);
         // sponsor send token to proxy by mistake
         vm.prank(sponsor);
-        MockERC20(jpycv2Address).transfer(proxyAddress_2, 500 ether);
+        MockERC20(jpycv2Address).transfer(proxyAddress_2, 525 ether);
 
         // create data to send the token to admin
         bytes memory dataToSendToAdmin = createDataToSendToAdmin();
@@ -1280,12 +1281,12 @@ contract ProxyFactoryTest is StdCheats, HelperContract {
 
         // after
         // STADIUM balance has now become // (10000 + 500) * 0.95 = 9975
-        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 9975 ether, "user1 balance not zero");
+        assertEq(MockERC20(jpycv2Address).balanceOf(user1), 10500 ether, "user1 balance not zero");
         // (10000 + 500) * 0.05 = 525
-        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 10525 ether, "STADIUM balance not 1125e18");
+        assertEq(MockERC20(jpycv2Address).balanceOf(stadiumAddress), 11025 ether, "STADIUM balance not 1125e18");
         assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_1), 0 ether, "proxy1 balance not 11000e18");
         // contest_2 is fully drained
-        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_2), 500 ether, "proxy2 balance not zero");
+        assertEq(MockERC20(jpycv2Address).balanceOf(proxyAddress_2), 525 ether, "proxy2 balance not zero");
     }
 
     // additional tests added after contest's fixing
